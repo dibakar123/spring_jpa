@@ -1,0 +1,21 @@
+Hibernate Lazy Loading
+------------------
+When a customer visits the store, the catalog must be loaded from the database. We probably don’t want the implementation to load every single one of the entities representing the tens of thousands of products to be loaded into memory. 
+
+Even if this was possible, it would probably cripple the performance of the site. Instead, we want only the catalog to load, possibly with the categories as well. Only when the user drills down into the categories should a subset of the products in that category be loaded from the database.
+
+To manage this problem, Hibernate provides a facility called lazy loading. When enabled, an entity’s associated entities will be loaded only when they are directly requested.
+
+//Following code loads only a single category from the database:
+Category category = (Category)session.get(Category.class,new Integer(42));
+
+//This code will fetch all products for category 42 from database - "NOW"
+Set<Product> products = category.getProducts();
+
+to enable lazy loading in hibernate:
+@OneToMany( mappedBy = "category", fetch = FetchType.LAZY )
+private Set<ProductEntity> products; 
+
+
+Another attribute parallel to "FetchType.LAZY" is "FetchType.EAGER" which is just opposite to LAZY i.e. it will load association entity as well when owner entity is fetched first time.
+

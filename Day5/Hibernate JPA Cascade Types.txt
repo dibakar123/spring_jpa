@@ -1,0 +1,67 @@
+Hibernate JPA Cascade Types
+-----------------
+Make assoication such as one-to-one mapping and one-to-many mappings. 
+There wanted to save the mapped entity whenever relationship owner entity got saved. 
+To enable this use “CascadeType” attribute.
+
+Take a scenario where an Employee can have multiple Accounts; but one account must be associated with only one employee. 
+
+@Entity
+@Table(name = "Employee")
+public class EmployeeEntity {
+
+    @Id
+    @Column(name = "ID", unique = true, nullable = false)
+    private Integer           employeeId;
+    @Column(name = "FIRST_NAME", unique = false, nullable = false, length = 100)
+    private String            firstName;
+    @Column(name = "LAST_NAME", unique = false, nullable = false, length = 100)
+    private String            lastName;
+ 
+    @OneToMany(cascade=CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name="EMPLOYEE_ID")
+    private Set<AccountEntity> accounts;
+ 
+    //Getters and Setters Ommited
+} 
+
+@Entity
+@Table(name = "Account")
+public class AccountEntity {
+ 
+    @Id
+    @Column(name = "ID", unique = true, nullable = false)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Integer           accountId;
+    @Column(name = "ACC_NO", unique = false, nullable = false, length = 100)
+    private String            accountNumber;
+ 
+    @OneToOne (mappedBy="accounts",  fetch = FetchType.LAZY)
+    private EmployeeEntity employee;
+ 
+}
+
+EmployeeEntity.java defines “cascade=CascadeType.ALL” and it essentially means that any change happened on EmployeeEntity must cascade to AccountEntity as well. 
+If save an employee, then all associated accounts will also be saved into database. 
+If delete an Employee then all accounts associated with that Employee also be deleted. 
+
+But if only want to cascade "only save"- operations but not delete operation,Then need to clearly specify it using below code.
+
+@OneToMany(cascade=CascadeType.PERSIST, fetch = FetchType.LAZY)
+@JoinColumn(name="EMPLOYEE_ID")
+private Set<AccountEntity> accounts;
+
+Now only when save() or persist() methods are called using employee instance then only accounts will be persisted. If any other method is called on session, it’s effect will not affect/cascade to accounts.
+
+JPA Cascade Types
+---------------------------
+The cascade types supported by the Java Persistence Architecture are as below:
+
+CascadeType.PERSIST : cascade type presist means that save() or persist() operations cascade to related entities.
+CascadeType.MERGE : cascade type merge means that related entities are merged when the owning entity is merged.
+CascadeType.REFRESH : cascade type refresh does the same thing for the refresh() operation.
+CascadeType.REMOVE : cascade type remove removes all related entities association with this setting when the owning entity is deleted.
+CascadeType.DETACH : cascade type detach detaches all related entities if a “manual detach” occurs.
+CascadeType.ALL : cascade type all is shorthand for all of the above cascade operations.
+
+***There is no default cascade type in JPA. By default no operations are cascaded.
