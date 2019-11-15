@@ -1,0 +1,75 @@
+Building REST services with Spring
+------------------------------
+
+Why REST? 
+-------
+The web and its core protocol, HTTP, provide a stack of features:
+a. Suitable actions (GET, POST, PUT, DELETE, …​)
+b. Caching
+c. Redirection and forwarding
+d. Security (encryption and authentication)
+These are all critical factors on building resilient services. So building on top of HTTP, REST APIs provide the means to build flexible APIs that can:
+1. Support backward compatibility
+2. Evolvable APIs
+3. Scaleable services
+4. Securable services
+5. A spectrum of stateless to stateful services.
+
+Annotations for Spring REST
+----------------------------
+@RestController:
+indicates that the data returned by each method will be written straight into the response body instead of rendering a template.
+
+We have routes for each operations (@GetMapping, @PostMapping, @PutMapping and @DeleteMapping, corresponding to HTTP GET, POST, PUT, and DELETE calls). 
+
+@ResponseBody :
+signals that this advice is rendered straight into the response body.
+
+@ResponseStatus :
+says to issue an HttpStatus.NOT_FOUND, i.e. an HTTP 404.
+
+To handle Spring REST, required module : spring webmvc
+
+   <dependency>
+    	<groupId>org.springframework</groupId>
+    	<artifactId>spring-webmvc</artifactId>
+    	<version>${spring.version}</version>
+   </dependency>
+
+To handle JSON dataset, use:
+
+<dependency>
+  <groupId>com.fasterxml.jackson.core</groupId>
+  <artifactId>jackson-databind</artifactId>
+  <version>2.7.3</version>
+ </dependency>
+
+
+To define a REST Controller , use:
+
+@GetMapping(value = "/{id}",headers = "Accept=application/json")
+public User getUserById(@PathVariable String id) {
+    .......
+}
+
+@PostMapping(value = "/adduser",headers = "Accept=application/json")
+public RestResponse addUser(@RequestBody User user) {
+    ......
+}
+
+@RestController
+public class SpringRestController { ......   }
+
+To define a method under restcontroller as :
+
+@RequestMapping(value = "/userlist", method = RequestMethod.GET,headers="Accept=application/json")
+public RestResponse getUser() {
+    .......
+}
+
+@RequestMapping(value = "/userlist/{uid}", method = RequestMethod.GET)
+public RestResponse getUserById(@PathVariable String uid) {
+    .......
+}
+
+

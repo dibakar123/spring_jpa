@@ -1,0 +1,683 @@
+Q 1 - Which of the following is true about ORM?
+
+A - ORM stands for Object-Relational Mapping.
+B - ORM is a programming technique for converting data between relational databases.
+C - Both of the above.
+D - None of the above.
+C
+
+Q 2 - Which of the following is true about SessionFactory object in hibernate?
+
+A - The SessionFactory is heavyweight object.
+B - SessionFactory object is created during application start up and kept for later use.
+C - You would need one SessionFactory object per database using a separate configuration file.
+D - All of the above.
+D
+
+Explain:
+The SessionFactory is a thread safe object and used by all the threads of an application. 
+The SessionFactory is a heavyweight object.
+It is usually created during application start up and kept for later use. 
+Need one SessionFactory object per database using a separate configuration file.
+
+Q 3 - Which of the following is true about transient state of a persistent entity?
+
+A - A new instance of a persistent class which is not associated with a Session.
+B - A new instance of a persistent class which has no representation in the database.
+C - A new instance of a persistent class which has no identifier value.
+D - All of the above.
+D
+
+Q 4 - Which method is used to re-read the state of the given instance from the underlying database?
+A - Session.refresh()
+B - Session.get()
+C - Session.reload()
+D - Session.retrieve()
+Answer : A
+
+Explaination: Session.refresh re-reads the state of the given instance from the underlying database.
+
+Q 5 - Which element of hbm.xml is used to map a Java class property to a column in the database table?
+
+A - id
+B - generator
+C - property
+D - class
+Answer : C
+
+Explaination: The <property> element is used to map a Java class property to a column in the database table.
+
+<hibernate-mapping package="eg">
+      <class name="Cat" table="cats">
+
+                <id name="id">
+                        <generator class="native"/>
+                </id>
+
+                <property name="birthdate"
+                    type="date"
+                    not-null="true"
+                    update="false"/>
+
+                <property name="color"
+                    type="eg.types.ColorUserType"
+                    not-null="true"
+                    update="false"/>
+       </class>
+</hibernate-mapping>
+
+Q 6 - Which of the following situation represents many-to-many relationship?
+
+A - An employee can have multiple certificates and same certificate can be conferred to many employees.
+B - An employee can have multiple certificates.
+C - A certificate can be conferred to many employees.
+D - All of the above.
+A
+
+
+Q 7 - What is first level cache in hibernate?
+A - The first-level cache is the Session based cache.
+B - The first-level cache is the SessionFactory based cache.
+C - Both of the above.
+D - None of the above.
+A
+
+Explaination: The first-level cache is the Session cache and is a mandatory cache through which all requests must pass.
+
+Q 8 - When a Read-write concurrency strategy is to be used?
+
+A - Use it for reference data only.
+B - Use this strategy for read-mostly data where it is critical to prevent stale data in concurrent transactions.
+C - Use this strategy if data hardly ever changes and a small likelihood of stale data is not of critical concern.
+D - None of the above.
+B
+
+Explaination :Use Read-write strategy for read-mostly data where it is critical to prevent stale data in concurrent transactions.
+
+Q 9 - Which of the following is a core component of Hibernate?
+
+A - Transaction
+B - SessionFactory
+C - Session
+D - All of the above
+D
+
+Q 10 - length attribute of @Column annotation permits the size of the column used to map a value particularly for a String value.
+
+A - false
+B - true
+
+B
+Explanation: 
+@Size, a bean validation annotation. Ex:property middleName annotated with @Size to validate its value between the attributes min and max:
+public class User {
+    @Size(min = 3, max = 15)
+    private String middleName;
+  
+}
+@Size makes the bean independent of JPA and its vendors such as Hibernate.  It is more portable than @Length
+@Length is the Hibernate-specific version of @Size. 
+
+@Entity
+public class User {
+    @Length(min = 3, max = 15)
+    private String lastName;
+ 
+}
+
+@Column to indicate specific characteristics of the physical database column. the length attribute of the @Column annotation to specify the string-valued column length. the resulting column would be generated as a VARCHAR(3) and trying to insert a longer string would result in an SQL error.
+use @Column only to specify table column properties as it doesn't provide validations.
+
+@Entity
+public class User {
+ 
+    @Column(length = 3)
+    private String firstName;
+ 
+}
+
+we can use @Column together with @Size to specify database column property with bean validation.
+
+@Entity
+public class User {
+ 
+    @Column(length = 5)
+    @Size(min = 3, max = 5)
+    private String city;
+ 
+}
+
+
+
+
+
+---
+1. Which of the following is not a core interface of Hibernate?
+a) Configuration
+b) Criteria
+c) SessionManagement
+d) Session
+
+Answer: c
+Explanation: SessionManagement is not a core interface of Hibernate. Configuration, Criteria, SessionFactory, Session, Query and Transaction are the core interfaces of Hibernate.
+
+2. SessionFactory is a thread-safe object.
+a) True
+b) False
+
+Answer: a
+Explanation: SessionFactory is a thread-safe object. Multiple threads can access it simultaneously.
+
+3. Which of the following methods returns proxy object?
+a) loadDatabase()
+b) getDatabase()
+c) load()
+d) get()
+
+Answer: c
+Explanation: load() method returns proxy object. load() method should be used if it is sure that instance exists.
+
+4. Which of the following methods hits database always?
+a) load()
+b) loadDatabase()
+c) getDatabase()
+d) get()
+
+Answer: d
+Explanation: get() method hits database always. Also, get() method does not return proxy object.
+
+5. Which of the following method is used inside session only?
+a) merge()
+b) update()
+c) end()
+d) kill()
+
+Answer: b
+Explanation: update() method can only be used inside session. update() should be used if session does not contain persistent object.
+
+6. Which of the following is not a state of object in Hibernate?
+a) Attached()
+b) Detached()
+c) Persistent()
+d) Transient()
+
+
+Answer: a
+Explanation: Attached() is not a state of object in Hibernate. Detached(), Persistent() and Transient() are the only states in Hibernate.
+
+7. Which of the following is not an inheritance mapping strategies?
+a) Table per hierarchy
+b) Table per concrete class
+c) Table per subclass
+d) Table per class
+
+
+Answer: d
+Explanation: Table per class is not an inheritance mapping strategies.
+Hibernate supports the three basic inheritance mapping strategies:
+table per class hierarchy  / table per subclass / table per concrete class
+
+8. Which of the following is not an advantage of using Hibernate Query Language?
+a) Database independent
+b) Easy to write query
+c) No need to learn SQL
+d) Difficult to implement
+
+Answer: d
+Explanation: HQL is easy to implement. Also, to implement it HQL it is not dependent on a database platform.
+
+9. In which file database table configuration is stored?
+a) .dbm
+b) .hbm
+c) .ora
+d) .sql
+
+Answer: b
+Explanation: Database table configuration is stored in .hbm file.
+
+------------------------------
+
+1. Which of the following methods hits database always?
+A. load()
+B. loadDatabase()
+C. getDatabase()
+D. get()
+D
+
+2. Select the inheritance model which is NOT available in Hibernate
+A. Tables Per Concrete Class
+B. Table Per class hierarchy
+C. Table Per sub-class
+D. Table Per Object
+D
+
+3. Which method is easy for a Java programmer to add a criteria on?
+A. HCQL
+B. HQL
+C. SQL
+D. None of the above
+A
+Explanation:  The Hibernate Criteria Query Language (HCQL) is used to fetch the records based on the specific criteria. The Criteria interface provides methods to apply criteria such as retreiving all the records of table whose salary is greater than 50000 etc.
+
+Example of HCQL to get all the records
+	Crietria c=session.createCriteria(Emp.class);//passing Class class argument  
+	List list=c.list();  
+Example of HCQL to get the 10th to 20th record
+	Crietria c=session.createCriteria(Emp.class);  
+	c.setFirstResult(10);  
+	c.setMaxResult(20);  
+	List list=c.list();  
+Example of HCQL to get the records whose salary is greater than 10000
+	Crietria c=session.createCriteria(Emp.class);  
+	c.add(Restrictions.gt("salary",10000));//salary is the propertyname  
+	List list=c.list();  
+Example of HCQL to get the records in ascending order on the basis of salary
+	Crietria c=session.createCriteria(Emp.class);  
+	c.addOrder(Order.asc("salary"));  
+	List list=c.list();  
+Example HCQL with Projection
+To fetch data of a particular column by projection such as name etc. 
+	Criteria c=session.createCriteria(Emp.class);  
+	c.setProjection(Projections.property("name"));  
+	List list=c.list();  
+
+4. Which of these simplifies an Object Relational Mapping tool?
+A. Data creation
+B. Data manipulation
+C. Data access
+D. All mentioned above
+D
+
+5. Which of the following are most common configuration methods of Hibernate Configuration
+A. XML Configuration hibernate.cfg.xml
+B. Mapping files and XML Configuration hibernate.cfg.xml
+C. web.config
+D. http.conf
+B
+
+6. Which of the following is true about transient state of a persistent entity?
+A. A new instance of a persistent class which is not associated with a Session
+B. A new instance of a persistent class which has no representation in the database
+C. A new instance of a persistent class which has no identifier value
+D. All of the above.
+D
+
+7. Which of the following are tags of hibernate.cfg.xml?
+A. SQL variant to generate
+B. DTD
+C. JDBC connection
+D. All of these
+D
+
+8. Which of these simplifies an Object Relational Mapping tool?
+A. Data creation
+B. Data manipulation
+C. Data access
+D. All mentioned above
+D
+
+9. Which of the following is not an inheritance mapping strategies?
+A. Table per hierarchy
+B. Table per concrete class
+C. Table per subclass
+D. Table per class
+D
+
+10. Which of the following is FALSE about Session in hibernate
+A. Session is a lightweight non-threadsafe object
+B. You can share the session between threads
+C. Session represents a single unit-of-work with the database
+D. Session is the primary interface for the persistence service
+B 
+
+Explanation :
+SessionFactory is a factory class for Session objects. It is available for the whole application while a Session is only available for particular transaction.
+
+Session is short-lived while SessionFactory objects are long-lived. SessionFactory provides a second level cache and Session provides a first level cache.
+
+SessionFactory is Hibernate’s concept of a single datastore and is threadsafe so that many threads can access it concurrently and request for sessions and immutable cache of compiled mappings for a single database.
+
+No, Session is not Thread Safe. A Session is a light weight and a non-threadsafe object (No, you cannot share it between threads) that represents a single unit-of-work with the database.
+
+11. What does the Session object hold?
+A. First Level Cache
+B. Second Level Cache
+C. Both A & B
+D. None of the above
+A
+
+12. If a single table hosts all the instances of a class hierarchy, then it is known as
+A. Joined subclass strategy
+B. Single table per class hierarchy strategy
+C. Both
+D. None
+B
+
+13. Which of the following is true about query level cache in hibernate?
+A. Query level cache is an optional feature
+B. Query level cache requires two additional physical cache regions that hold the cached query results and the timestamps when a table was last updated
+C. Query level cache is only useful for queries that are run frequently with the same parameters
+D. All of the above
+D
+
+Hibernate - Caching
+-------------------
+Caching is a mechanism to enhance the performance of a system. It is a buffer memory that lies between application and database. 
+Cache memory stores recently used data items in order to reduce number of database hits as much as possible. Hibernate utilizes a multilevel caching scheme.
+
+First-level Cache=================
+The first-level cache is the Session cache and is a mandatory cache through which all requests must pass. The Session object keeps an object under its own power before committing it to database.
+
+If issue multiple updates to an object, Hibernate tries to delay doing update as long as possible to reduce number of update SQL statements issued. 
+If close session, all objects being cached are lost and either persisted or updated in database.
+
+Second-level Cache=================
+Second level cache is an optional cache and first-level cache will always be consulted before any attempt is made to locate an object in second-level cache. 
+The second level cache can be configured on a per-class and per-collection basis and mainly responsible for caching objects across sessions.
+
+Any third-party cache can be used with Hibernate. An org.hibernate.cache.CacheProvider interface is provided, which must be implemented to provide Hibernate with a handle to cache implementation.
+
+Query-level Cache
+Hibernate also implements a cache for query resultsets that integrates closely with the second-level cache. This is an optional feature and requires two additional physical cache regions that hold the cached query results and the timestamps when a table was last updated. This is only useful for queries that are run frequently with the same parameters.
+
+
+Hibernate uses first-level cache by default and have nothing to do to use first-level cache. 
+Hibernate second-level cache is set up in two steps. First, decide which concurrency strategy to use. After that, configure cache expiration and physical cache attributes using cache provider.
+
+Link: https://www.tutorialspoint.com/hibernate/hibernate_caching.htm
+
+14. The Hibernate XML configuration file name is?
+A. hibernate.cfg.xml
+B. hibernate.config.xml
+C. hibernate.cg.xml
+D. None
+A
+
+15. What does hibernate.hbm2ddl.auto create this means?
+A. create tables automatically
+B. create session object automatically
+C. create Session Factory object automatically
+D. None
+A
+
+16. How many layers are available in Hibernate architecture?
+A. 3
+B. 4
+C. 5
+D. 2
+A
+
+17. Which of the following is not a Session method?
+A. Session.save()
+B. Session.remove()
+C. Session.saveorupdate()
+D. Session.persist()
+B
+Explanation:  
+
+Hibernate Session interface methods
+--------------
+beginTransaction()
+Begin a unit of work and return the associated Transaction object. 
+save()
+Persist the given transient instance,stores the object in database.
+update()
+Update the persistent instance with the identifier of the given detached instance. It updates the database record.
+saveOrUpdate()
+Either save(Object) or update(Object) the given instance, depending upon resolution of the unsaved-value checks. This operation cascades to associated instances if the association is mapped with cascade="save-update".
+persist()
+Make a transient instance persistent.
+merge()
+Copy the state of the given object onto the persistent object with the same identifier. If there is no persistent instance currently associated with the session, it will be loaded. Return the persistent instance.
+flush()
+Force this session to flush. Must be called at the end of a unit of work
+delete()
+Remove a persistent instance from the datastore. 
+createQuery()
+Create a new instance of Query for the given HQL query string.
+createSQLQuery()
+Create a new instance of SQLQuery for the given SQL query string.
+
+---------------JPA
+Question 1: Which of the following annotation is used for Is-A mapping?
+
+    @Inheritance    
+    @IsAMapping   
+    @InheritanceMapping   
+A
+Question 2: Which annotation is used to create Pk-Fk relation b/w two tables?
+
+    @JoinColumn    
+    @ForeignKey   
+    @JoinedKey   
+A
+Question 3: Which annotation is used to link two tables through a relation table?
+
+    @RelationTable   
+    @JoinTable    
+    @LinkTable   
+B
+Question 4: Which attribute of @OneToMany is used to mark an entity as owned?
+
+    cascade   
+    mappedBy    
+    propertyRef   
+B
+Question 5: Which of the following Is-A mapping, requires discriminator column?
+
+    Single Table Mapping    
+    Joined Table Mapping   
+    Table Per Class Mapping   
+A
+Question 6: What is the JPA equivalent of hibernate.cfg.xml file?
+
+    configuration.xml   
+    persistence.xml    
+    jpa.configuration.xml   
+B
+Question 7: Which of the following is not a mandatory annotation for an entity class?
+
+    @Entity   
+    @Table    
+    @Id   
+B
+Question 8: Which of the following annotation is applied on the unique Id of an entity to get its value generated?
+
+    @Generator   
+    @GeneratedValue    
+B
+Question 9: JPA implementation is provided by ---?
+
+    Hibernate   
+    Toplink   
+    Ibatis   
+    All of them    
+D
+Question 10: For collection such as array, list, set etc no extra annotations are provided by JPA?
+
+    True    
+    False   
+A
+
+-------------------------------
+Question 1: Which method is used to persist the change of state of a detached entity?
+
+    update()   
+    saveOrUpdate()   
+    merge()    
+D
+Question 2: Which of the following method returns null when the given Id is invalid?
+
+    get()    
+    load()   
+A
+Question 3: In which of the following Is-A mapping, only the state of entities is persisted?
+
+    Single Table Mapping   
+    Table Per Sub Class Mapping   
+    Table Per Class Mapping    
+C
+Question 4: Many-To-One Has-A relation can be mapped using ---?
+
+    PK-FK Mapping    
+    Relaion Table Mapping   
+    Both   
+A
+Question 5: Which of the following is not a mapping of One-To-One relation?
+
+    Pk-Fk Mapping    
+    Same Pk Value Mapping   
+    Inverse Table Mapping    
+    Relation Table Mapping   
+C
+Question 6: By default collections are ---?
+
+    Eager loaded   
+    Lazy loaded    
+B
+Question 7: Which of the method of Query supports lazy loading of selected entities?
+
+    list()   
+    iterate()    
+B
+Question 8: Which of the following mapping element has column attribute?
+
+    <one-to-one>   
+    <one-to-many>   
+    <many-to-one>    
+C
+Question 9: Which of the following is not a valid Id generator?
+
+    increment   
+    identity   
+    foreign   
+    composite    
+D
+Question 10: What is the return type of the save() method of Session?
+
+    void    
+    Serializable    
+    Object   
+B
+
+-----------------
+Question 1: A Criteria object is created with the help of ---?
+
+    SessionFactory   
+    Session    
+    Query    
+A
+Question 2: In Criteria, conditions are represented by --- objects?
+
+    Restrictions   
+    Criterion    
+B
+Question 3: In order to select some properties of an entity using Criteria, --- object is required?
+
+    Projection    
+    ProjectionList    
+    Projections   
+B
+Question 4: When a single property of an entity is selected using Criteria, list() method returns ---?
+
+    List<String>    
+    List<Object>   
+    List<Object[]>   
+A
+Question 5: Which of the following attribute is used to mark an entity as owned?
+
+    cascade   
+    inverse    
+    lazy   
+    owned   
+B
+Question 6: What is the default value of cascade attribute?
+
+    none    
+    save   
+    save-update   
+    all   
+A
+Question 7: Second-Level cache implementation is not provided by Hibernate?
+
+    True    
+    False    
+A
+Question 8: When second-level caching is enabled, query caching is enabled by default?
+
+    Yes    
+    No    
+B
+Question 9: Which of the following is not a valid entity type?
+
+    Transient   
+    Persistent   
+    Dirty    
+    Detached   
+C
+Question 10: Ternary relations such as an entity having a Map<Object, Object> as member, can not be managed by default in Hibernate?
+
+    True    
+    False    
+A
+----------------------------
+
+1. What are the JPA @Entity association attributes?
+A. Association validation
+B. Association multiplicity
+C. Association cascade behavior
+D. Association direction
+A
+
+2. JPA implementation is provided by ---?
+A. Hibernate  B. Toplink  C. Ibatis  D. All of them
+D
+
+3. ________ has stated that ideas came from several frameworks, including Hibernate and JDO.
+A. Sun Microsystems     B. Java (software platform)
+C. Open JDK             D. Java (programming language)
+C
+
+4. What is the Life Cycle Of A Jpa Entity?
+A. New / Transient  B. Managed / Persisted  C. Detached  D. All of the above
+D
+
+5. What's true about the following @Entity association between House and Window?
+@Entity
+public class Window {
+	@Id
+	private int winNo;
+	@ManyToOne
+	private House aHouse;
+}
+@Entity
+public class House {
+	@Id
+	private int houseNo;
+	@OneToMany(mappedBy="aHouse")
+	private List windows;
+}
+A. It's OneToMany unidirectional association
+B. It's OneToMany bidirectional association
+C. The association owner is the House class
+D. The association owner is the Window class
+B
+
+6. Which annotation is used to create Pk-Fk relation b/w two tables?
+A. JoinColumn  B. ForeignKey  C. JoinedKey  D. None of these
+A
+
+7. What is TRUE about the cascading and cascade mode attributes in Entity Beans?
+A. Cascade mode attributes can be specified for the association annotaions (like @OneToMany) in an entity bean
+B. The cascading direction is from the target entity to the source entity
+C. PERSIST, DELETE and REFRESH are cascading mode attributes
+D. Refresh cascade causes to refresh the target entities of a relationship when refresh is invoked on the source entity of the relationship
+A
+
+8. Which attribute of @OneToMany is used to mark an entity as owned?
+A. cascade   B. mappedBy   C. propertyRef  D. None
+B
+
+9. What is the JPA equivalent of hibernate.cfg.xml file?
+A. configuration.xml   B. persistence.xml  C. jpa.configuration.xml  D. None
+B

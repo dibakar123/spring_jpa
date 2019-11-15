@@ -1,0 +1,197 @@
+1. make a maven web app
+2. make a folder src/main/java
+3. update pom.xml  and maven --> update project
+4. update web.xml to configure DispatcherServlet
+5. make a file spring-servlet.xml under WEB-INF
+   here mention base-package as 'com'
+
+Now we create a controller class :
+
+@Controller("mycontroller")
+public class MyController {
+
+	
+}
+
+add a method :
+  @RequestMapping(value="/hello1", method=RequestMethod.GET)
+	public void show1() {
+		System.out.println(" I am fine....");
+	}
+
+In html , we give link :
+<a href='hello1.do'>Hello1</a>|
+
+
+add another method which returns a string ---> indicates view jsp page name
+
+  @RequestMapping(value="/hello2", method=RequestMethod.GET)
+  public String show2() {
+    	System.out.println(" I am fine from show2....");
+    	return "show2";
+    }
+
+add another method which returns ModelAndView ---> indicates view jsp page name with some data
+
+   @RequestMapping(value="/hello3", method=RequestMethod.GET)
+    public ModelAndView show3() {
+    	ModelAndView mav  = new ModelAndView();
+    	mav.setViewName("show3");
+    	mav.addObject("var1","Dibakar Sanyal");
+    	mav.addObject("address", "Kolkata,WB");
+    	return mav;
+    	
+    }
+
+----handle form using web mvc
+ DAO layer
+--------------------------
+package com.dao;
+
+import java.util.List;
+import com.model.User;
+
+public interface UserDao {
+  public List<User> getUsers();
+}
+
+
+@Repository("userDao")
+public class UserDaoImpl implements UserDao {
+
+public List<User> getUsers(){
+  EntityManagerFactory emf = Persistence.createEntityManagerFactory("pu");
+  EntityManager em = emf.createEntityManager();	  
+  @SuppressWarnings("unchecked")
+	List<User> users = em.createQuery("SELECT u FROM  User u").getResultList();
+  return  users;
+  }
+
+}
+------------------
+package com.service;
+
+import com.model.User;
+public interface UserService {
+  public List<User> getUsers();
+}
+------------------------------------------------
+@Service("userService")
+public class UserServiceImpl implements UserService {
+  @Autowired
+  public UserDao userDao;
+ public List<User> getUsers(){
+	  List<User>  list = userDao.getUsers();
+	  return list;
+  }
+}
+-----------------------------------
+@Controller("mycontroller")
+public class MyController {
+	@Autowired
+	 public UserService userService;
+ @RequestMapping(value = "/viewusers", method = RequestMethod.GET)
+    public ModelAndView viewusers() {
+    	List<User>  userlist = userService.getUsers();
+    	 ModelAndView mav = new ModelAndView("viewusers");
+    	 mav.addObject("userlist", userlist);
+       	 return mav;
+     }
+......
+}
+--------------------------
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<c:forEach items="${userlist}" var="user">
+      <div>
+            <b>User Name:<c:out value="${user.username}"/></b><br>
+            <c:out value="${user.firstname}"/> &nbsp;<c:out value="${user.lastname}"/><br>  
+            Email:<c:out value="${user.email}"/><br>  
+            Contact No:<c:out value="${user.phone}"/>
+            <hr>  
+       </div>
+    </c:forEach> 
+
+
+----assignemnts-------
+
+1.  Find all accounts 
+2.  Find all transactions for a particular account
+3.  Find last 5 transactions for a particular account
+4.  Take start and end date , in between show all transactions (datewise desc)
+5.  Find out all accounts who are not active now
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

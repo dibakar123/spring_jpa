@@ -1,0 +1,57 @@
+Spring – web mvc
+------------
+
+MVC (Model-View-Controller) is a software architecture pattern, which separates application into three parts: model, view, and controller. 
+a. model represents a Java object carrying data. 
+b. view visualizes the data that the model contains. 
+c. controller manages the data flow into model object and updates the view whenever data changes; it keeps view and model separate.
+
+
+Spring MVC is the original web framework built on the Servlet API.
+It is build on the MVC design pattern.
+Spring MVC is the web component of Spring’s framework. 
+Provides a rich functionality for building robust Web Applications. 
+
+Spring’s DispatcherServlet is completely integrated with Spring IoC container.
+Spring’s DispatcherServlet allows to use every other feature of Spring.
+
+Web MVC Request Processing Lifecycle
+-------------------------------
+◦	The client sends a request to web container in the form of http request.
+◦	This incoming request is intercepted by Front controller which is DispatcherServlet and it will then tries to find out appropriate Handler Mappings.
+◦	With help of Handler Mappings, DispatcherServlet will dispatch the request to appropriate Controller.
+◦	Now Controller tries to process the request and returns the Model and View object in form of ModelAndView instance to Front Controller.
+◦	Front Controller then tries to resolve the View, which can be JSP, Freemarker, Velocity etc. by consulting View Resolver object.
+
+
+Configuring Spring MVC
+---------------------
+◦	The entry point of Spring MVC is the DispatcherServlet. 
+◦	DispatcherServlet is a normal servlet class which extends HttpServlet base class. 
+◦	Need to configure it in web.xml.
+
+
+<servlet>
+<servlet-name>spring</servlet-name>
+<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+<load-on-startup>1</load-on-startup>
+</servlet>
+<servlet-mapping>
+<servlet-name>spring</servlet-name>
+<url-pattern>*.do</url-pattern>
+</servlet-mapping>
+
+
+Model, ModelMap, ModelAndView
+----------------------------
+Model, ModelMap, and ModelAndView are used to define a model in a Spring MVC application. 
+Model defines a holder for model attributes and is primarily designed for adding attributes to the model. 
+ModelMap is an extension of Model with the ability to store attributes in a map and chain method calls. 
+ModelAndView is a holder for a model and a view; it allows to return both model and view in one return value.
+
+
+
+
+
+
+

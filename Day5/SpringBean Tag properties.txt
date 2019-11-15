@@ -1,0 +1,533 @@
+Spring bean tag properties (attributes)
+==============================
+ In xml based spring bean configurations, using <bean> tag, you can manage them. 
+Here we have given complete list of bean tag properties:
+
+name / id:
+This attribute specifies the bean unique identifier. In XML based configuration metadata, you use the id and/or name attributes to specify the bean identifier.
+
+class:
+This attribute is mandatory and specify the bean class to be used to create the bean. You should specify fully qualified class name. Include package name.
+
+scope:
+This attribute specifies the scope of the objects created from a particular bean definition. The scope values can be prototype, singleton, request, session, and global session.
+
+constructor-arg:
+This is used to inject the dependencies through bean constructor.
+
+properties:
+This attribute is used to inject the dependencies through setter method.
+
+autowiring mode:
+This is used to inject the dependencies.
+
+lazy-init (lazy-initialization mode):
+A lazy-initialized bean tells the IoC container to create a bean instance when it is first requested, rather than at startup.
+
+init-method (initialization method):
+A callback to be called just after all necessary properties on the bean have been set by the container. This is part of bean lifecycle.
+
+destroy-method (destruction method):
+A callback to be used when the container containing the bean is destroyed. This is part of bean lifecycle.
+
+------------------
+Differen types of spring bean scopes
+
+In the spring bean configurations, bean attribute called 'scope' defines what kind of object has to created and returned. There are 5 types of bean scopes available, they are:
+
+1) singleton: Returns a single bean instance per Spring IoC container.
+
+2) prototype: Returns a new bean instance each time when requested.
+
+3) request: Returns a single instance for every HTTP request call.
+
+4) session: Returns a single instance for every HTTP session.
+
+5) global session: global session scope is equal as session scope on portlet-based web applications.
+
+If no bean scope is specified in bean configuration file, then it will be by default 'singleton'.
+
+ <!-- Since scope is not defined, it assigns default value 'singleton'.It creates only one instance per spring IoC. -->
+    <bean id="articleBean" class="com.bean.Article" />
+     
+<!-- Since scope is prototype, it creates and returns ColorBean for every     call-->
+    <bean id="clrBean" class="com.bean.ColorBean" scope="prototype"/>
+
+<!-- Since scope is defined with 'singleton'.It creates only one instance per spring IoC. -->     
+    <bean id="ticketBean" class="com.bean.TicketManager" scope="singleton"/>
+
+------------------
+How to inject inner bean in spring?
+
+Inner beans are the beans that are defined within the scope of another bean. 
+Thus, a <bean/> element inside the <property/> or <constructor-arg/> elements is called inner bean. 
+
+  <bean id="paymentGwBean" class="com.beans.PaymentGateway">
+        <constructor-arg>
+           <bean class="com.beans.Order">
+                <property name="item" value="Java" />
+                <property name="price" value="RS 22.50" />
+                <property name="address" value="Bangalore" />
+            </bean> 
+        </constructor-arg>
+    </bean>
+
+
+--------------------
+Set spring bean scope using annotation
+
+@Service
+@Scope("prototype")
+public class PaymentGateway {
+.....
+}
+
+------
+spring bean init and destroy methods
+
+define initialization and destroy methods with in the spring bean. You can configure it using init-method, and destroy-method in the xml based configuration file. These are part of spring bean life cycle.
+
+package com.beans;
+public class NetworkManager {
+ 
+    public void init(){
+        System.out.println("Inside init() method..."); }
+
+    public void destroy(){
+        System.out.println("Inside destroy() method..."); }
+}
+
+<bean id="netManager" class="com.beans.NetworkManager"
+       init-method="init" destroy-method="destroy" />
+
+
+Spring bean initialization callback
+========================
+Spring comes with different options to call initialization method. 
+In general, need to initialize some resources during bean creation. 
+achieve this by implementing org.springframework.beans.factory.InitializingBean inteface with bean. 
+implement afterPropertiesSet() method, and write all initialization code with in this method.
+
+
+Spring bean destruction callback
+==================
+initialize resources during spring bean creation, then need to close all the opened resources just before killing the spring bean, all clean up related code will be part of destroy method. 
+achieve this by implementing org.springframework.beans.factory.DisposableBean interface with bean. 
+implement destroy() method.
+
+package com.beans;
+ 
+public class NetworkManager implements InitializingBean, DisposableBean{
+//override
+public void afterPropertiesSet(){
+         System.out.println("Inside init() method...");  }
+
+//override
+public void destroy(){
+            System.out.println("Inside destroy() method..."); }
+}
+
+
+Spring bean init and destroy methods using annotations @PostConstruct and @PreDestroy
+
+configure spring bean initialization and destroy method calls using java annotations @PostConstruct and @PreDestroy.
+
+package com.beans;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+ 
+public class NetworkManager{
+@PostConstruct
+    public void init(){
+           System.out.println("Inside init() method..."); }
+@PreDestroy
+    public void destroy(){
+           System.out.println("Inside destroy() method..."); }
+}
+
+---------
+Spring Dependency Injection and Types
+==========================
+Any application is composed of many objects that collaborate with each other to perform some useful stuff. Traditionally each object is responsible for obtaining its own references to the dependent objects (dependencies) it collaborate with. This leads to highly coupled classes and hard-to-test code.
+
+For example, consider a Car object. A Car depends on Wheels, Engine, Fuel, Battery, etc to run. Traditionally define brand of such dependent objects along with the definition of the Car object.
+     
+When using Dependency Injection, objects are given their dependencies at run time rather than compile time (car manufacturing time). So that we can now change the Wheel whenever we want. Here, the Dependency (Wheel) can be injected into Car at run time.
+
+Inversion of Control (IoC) : is a general concept, and it can be expressed in many different ways and Dependency Injection is merely one concrete example of Inversion of Control.
+
+This concept says that do not create objects but describe how they should be created. 
+don't directly connect components and services together in code but describe which services are needed by which components in a configuration file. A container is then responsible for hooking it all up.
+
+Spring supports 2 types of dependency injection, they are:
+
+1) Constructor-based dependency injection: It is accomplished when the container invokes a class constructor with a number of arguments, each representing a dependency on other class.
+
+2) Setter-based dependency injection: It is accomplished by the container calling setter methods on beans after invoking a no-argument constructor or no-argument static factory method to instantiate your bean.
+
+Dependency Injection via Setter--------------
+package com.bean;
+ 
+public class BlueColor {
+    public void printColor() {
+        System.out.println("It is blue in color...");   }
+}
+
+package com.bean;
+ 
+public class ColorManager {
+     MyColor color;
+ 
+    public void pringColor(){
+        this.color.printColor();  }
+     
+    /*dependency injection through setter method*/
+    public void setMyColor(MyColor myColor){
+        this.color = myColor;  }
+}
+
+Now declarations:
+<bean id="colorManager" class="com.bean.ColorManager">
+        <property name="myColor" ref="blueColor" />
+    </bean>
+     
+<bean id="blueColor" class="com.bean.BlueColor" />
+
+Dependency Injection via Constructor----------------
+
+package com.bean;
+ 
+public class BlueColor {
+    public void printColor() {
+        System.out.println("It is blue in color...");  }
+}
+
+
+package com.bean;
+ 
+public class ColorManager {
+     MyColor color;
+     
+    public void pringColor(){
+        this.color.printColor();  }
+     
+    /*dependency injection through constructor */
+    public ColorManager(MyColor myColor){
+        this.color = myColor; }
+}
+
+Declaration:
+   <bean id="colorManager" class="com.bean.ColorManager">
+        <constructor-arg>
+            <ref bean="blueColor" />    
+        </constructor-arg>
+    </bean>
+    <bean id="blueColor" class="com.bean.BlueColor" />
+
+---------------Spring bean inheritance configuration
+
+A spring bean definition contains lot of information like property values, constructor arguments, and container specific information like init and destroy method settings and so on. 
+Spring allows to inherit all these bean properties. 
+A child bean definition can inherit configurations from its parent definition. 
+The child bean definition can override some values, or add new values.
+
+package com.beans;
+ 
+public class Employee {
+ 
+    private int empId;
+    private String name;
+    private String company;
+    // setter & getter
+}
+
+ <bean id="baseEmployeeBean" class="com.beans.Employee">
+        <property name="company" value="Java" />
+    </bean>
+ <bean id="myEmployeeBean" parent="baseEmployeeBean">
+        <property name="empId" value="1016" />
+        <property name="name" value="JEE" />
+    </bean>
+
+Abstract attribute in parent bean
+============================
+With the above given xml based configuration, can get object for even parent bean. 
+Spring allows to restrict parent bean by specifying abstract property.
+
+<bean id="baseEmployeeBean" class="com.beans.Employee" abstract="true">
+        <property name="company" value="Java" />
+    </bean>
+<bean id="myEmployeeBean" parent="baseEmployeeBean">
+        <property name="empId" value="1016" />
+        <property name="name" value="Nata" />
+    </bean>
+
+-----Spring dependency checking with @Required annotation
+
+Sometimes, need to make sure that all the required dependencies are set to the spring bean. 
+Spring provides @Required annotation to check spring dependencies. 
+If the required dependencies are not set, then it throws BeanInitializationException.
+
+package com.beans;
+ 
+import org.springframework.beans.factory.annotation.Required;
+ 
+public class PaymentGateway {
+    private String client;
+    private Order order;
+     
+    @Required
+    public void setOrder(Order ord){
+        this.order = ord;
+    }
+    // other setter & getter
+}
+
+Declare in beans.xml as:
+ <bean  class="org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor"/>
+ <bean id="paymentGateway" class="com.beans.PaymentGateway" />
+
+When we try to get this bean, 
+PaymentGateway myEmp = (PaymentGateway) context.getBean("paymentGateway");
+System.out.println(myEmp.toString());
+
+Output:
+ nested exception is org.springframework.beans.factory.BeanInitializationException: 
+Property 'order' is required for bean 'paymentGateway'
+
+------------Spring provides four different types of auto component scan annotations, they are @Component, @Service, @Repository and @Controller. 
+Technically, there is no difference between them, but every auto component scan annotation should be used for a special purpose and with in the defined layer. 
+
+@Component: It is a basic auto component scan annotation, it indicates annotated class is a auto scan component.
+
+@Repository: need to use this annotation with in the persistance layer, which acts like database repository.
+
+@Service: indicates annotated class is a Service component in the business layer.
+
+@Controller: indicates that it is a controller components, and mainly used at presentation layer.
+
+----How to enable auto component scanning in spring
+==========================
+annotate services or DAOs with on of @Component, @Service, @Repository, or @Controller annotations. 
+If specify the class with one of these annotations, the class is eligible for auto scan.
+
+Here is the xml based configuration file, to enable component auto scanning include component-scan tag, and specify base-package. 
+The base-package value should be package name and will be scanned for the components with in the packages and its sub-packages.
+<context:component-scan base-package="com" />
+
+-------Spring bean auto-wiring modes
+============================
+Spring provides feature called bean auto-wiring, which will cut down the configurations for beans in the xml based configuration file. 
+When using XML-based configuration metadata, the autowire mode for a bean definition is specified by using the autowire attribute of the <bean/> element.
+
+no: No autowiring at all. 
+
+byName: Autowiring by property name. 
+
+byType: Allows a property to be autowired if there is exactly one bean of the property type in the container. If there is more than one, a fatal exception is thrown.
+
+constructor: This is analogous to byType, but applies to constructor arguments. If there isn't exactly one bean of the constructor argument type in the container, a fatal error is raised.
+
+autodetect: Chooses constructor or byType through introspection of the bean class. If a default constructor is found, the byType mode will be applied.
+
+auto-wire by name:
+---------------------
+package com.beans;
+ 
+public class PaymentGateway {
+     private Order order;
+....
+}
+
+package com.beans;
+ 
+public class Order {
+     private String item;
+     private String price;
+ ......
+}
+
+normal way of injecting bean properties:
+<bean id="paymentGateway" class="com.beans.PaymentGateway" >
+        <property name="order" ref="orderBean" />
+    </bean>
+     
+    <bean id="orderBean" class="com.beans.Order" >
+        <property name="item" value="Java Book" />
+        <property name="price" value="RS 225" />
+    </bean>
+
+to auto-wire by name. Use autowire property to specify inject by name:
+    <bean id="paymentGateway" class="com.beans.PaymentGateway" autowire="byName" />
+     
+    <bean id="order" class="com.beans.Order" >
+        <property name="item" value="Java" />
+        <property name="price" value="RS 225" />
+    </bean>
+
+auto-wiring by type:
+-----------------------
+<bean id="paymentGateway" class="com.beans.PaymentGateway"  autowire="byType" />
+     
+    <bean id="orderBean" class="com.beans.Order" >
+        <property name="item" value="Java" />
+        <property name="price" value="RS 225" />
+    </bean>
+
+auto-wiring mode constructor:
+-------------------
+Auto-wiring by constructor is similar to byType, but it applies to constructor arguments. If there isn't exactly one bean of the constructor argument type in the container, a fatal error is raised.
+
+package com.beans;
+ 
+public class PaymentGateway {
+    private Order order;
+     
+    public PaymentGateway(Order ord){
+        this.order = ord; }
+.....
+}
+
+package com.beans;
+ 
+public class Order {
+    private String item;
+    private String price;
+....
+}
+
+xml based configuration with auto-wire configuration using constructor mode:
+   <bean id="paymentGateway" class="com.beans.PaymentGateway" autowire="constructor" />
+     
+   <bean id="orderBean" class="com.beans.Order" >
+        <property name="item" value="Java" />
+        <property name="price" value="RS 225" />
+   </bean>
+
+auto-wiring using @Autowired annotation:
+====================================
+To use auto-wire feature through annotations, must include annotation-config tag with in xml based configuration file:
+  <context:annotation-config />
+
+use @Autowired annotation to auto wire spring bean on setter method, instance variable, and constructor. 
+If use @Autowired annotation, spring container auto-wires the bean by matching data type.
+
+@Autowired annotation on instance variable:
+==========================
+public class PaymentGateway {
+ 
+    @Autowired
+    private Order order;
+...
+}
+
+@Autowired annotation on setter method:
+================
+public class PaymentGateway {
+ 
+    private Order order;
+     
+    public Order getOrder() {
+        return order; }
+ 
+    @Autowired
+    public void setOrder(Order order) {
+        this.order = order; }
+.....
+}
+
+@Autowired annotation on constructor:
+=========================
+public class PaymentGateway {
+ 
+    private Order order;
+     
+    @Autowired
+    public PaymentGateway(Order ord){
+        this.order = ord; }
+....
+}
+
+
+------------Spring AOP 
+In Spring, aspect-oriented programming (AOP) is a programming paradigm that aims to increase modularity by allowing the separation of cross-cutting concerns. 
+AOP forms a basis for aspect-oriented software development.
+
+My business logic service class: It has only one method runMyBusinessLogic() contains the business logic.
+
+public class MyBusinessService {
+ 
+    public void runMyBusinessLogic(){
+        System.out.println("Running business logic...");  }
+}
+
+Create a class which implements MethodBeforeAdvice interface. It will execute before the method every execution.
+
+public class RunBeforeExecution implements MethodBeforeAdvice{
+ 
+    @Override
+    public void before(Method methodOrg, Object[] args, Object target) throws Throwable {
+        System.out.println("Running before advice...");
+    }
+}
+
+Declarations:
+
+   <bean id="busService" class="com.bean.MyBusinessService" />
+    <bean id="beforeAdv" class="com.aop.RunBeforeExecution" />
+    <bean id="busServiceProxy" class="org.springframework.aop.framework.ProxyFactoryBean" >
+        <property name="target" ref="busService" />
+        <property name="interceptorNames">
+            <list>
+                <value>beforeAdv</value>
+            </list>
+        </property>
+    </bean>
+
+**In this proxy configuration, add two properties called 'target' and 'interceptorNames'. 
+'target' defines in which bean want to introduce advice. 
+'interceptorNames' defines that which advice class want to introduce to the said target.
+
+Same as others are :
+AfterReturningAdvice
+ThrowsAdvice  as "After Throwing Advice"
+Spring AOP - Around advice: combines all three advices (before advice, after returning advice and around advice) during method execution.
+
+-----------Spring bean java based configuration using @Configuration and @Bean
+helps in Spring annotation based configuration. 
+@Configuration annotation indicates that a class declares one or more @Bean methods and may be processed by the Spring container to generate bean definitions and service requests for those beans at runtime.
+It does not need any external xml file for required beans configurations.
+move all xml based configurations to java based configurations.
+have added a new dependency called cglib to support java based configurations in maven's pom.xml file.
+
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib</artifactId>
+            <version>3.0</version>
+        </dependency>
+
+EXample:
+
+@Configuration
+public class MyAppConfig {
+ 
+    @Bean(name="myColorBean")
+    public MyColor getMyColors(){
+        return new RedColor();
+    }
+}
+
+This class is equivalent of xml based configuration file, must annotate the class with @Configuration. The bean declaration can be achieved by using @Bean annotation.
+
+To test....
+public class SpringDemo {
+ 
+    public static void main(String a[]){
+        ApplicationContext context = new AnnotationConfigApplicationContext(MyAppConfig.class);
+        MyColor color = (MyColor) context.getBean("myColorBean");
+        color.printColor();
+    }
+}
+
+

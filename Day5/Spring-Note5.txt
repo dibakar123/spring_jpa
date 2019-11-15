@@ -1,0 +1,129 @@
+Spring  Configuration with annotation
+----------------------------------------------
+Spring @Configuration annotation helps in Spring annotation based configuration. 
+@Configuration annotation indicates that a class declares one or more @Bean methods and may be processed by the Spring container to generate bean definitions and service requests for those beans at runtime.
+
+It does not need any external xml file for required beans configurations.
+
+ @Configuration
+ public class AppConfig {
+ 	  @Bean
+ 	  public MyServiceImpl  myService() {
+ 	      return new MyServiceImpl();
+ 	  }
+ }
+
+
+
+Spring MVC - @Config
+---------------------
+To configure Spring’s Dispatcher Servlet , need an xml file as :
+Spring-servlet.xml where we map requests for servlets.
+
+First, in spring-servlet.xml where define a view-resolver for identifying the real view , and location to search for beans via component-scanning. 
+
+Second, in web.xml, define the front-controller configuration and the url pattern for request be looking on server.
+Without designing XML, may use Configuration by Java as a class.
+
+Spring MVC - Configuration Class
+
+ 	package com;
+ 	import org.springframework.context.annotation.*;
+ 	import org.springframework.web.servlet.view.*;
+
+ 	@EnableWebMvc  
+ 	@Configuration  
+ 	@ComponentScan({ "com" })  
+ 	public class AppConfig {  
+
+ 	 @Bean  
+ 	 public InternalResourceViewResolver viewResolver() {  
+ 	        InternalResourceViewResolver viewResolver  = new InternalResourceViewResolver();  
+ 	        viewResolver.setViewClass(JstlView.class);  
+ 	        viewResolver.setPrefix("/WEB-INF/jsp/");  
+ 	        viewResolver.setSuffix(".jsp");  
+ 	        return viewResolver;  
+ 	    }   
+      }
+
+Equivalent :spring-servlet.xml 
+
+<context:component-scan/>   =>	@ComponentScan	
+Scan starts from base package and registers all controllers, repositories, 
+service, beans, etc.
+
+<mvc:annotation-driven/>   =>	@EnableWebMvc	
+Enable Spring MVC-specific annotations like @Controller
+
+Spring config file =>	@Configuration	
+Treat as the configuration file for Spring MVC-enabled applications.
+
+
+
+====
+Spring - Transaction Management
+----------------
+A database transaction is a sequence of actions that are treated as a single unit of work. 
+These actions should either complete entirely or take no effect at all. 
+RDBMS keeps ACID properties for each transaction.
+
+Local transactions : are specific to a single transactional resource like a JDBC connection
+global transactions : can span multiple transactional resources like transaction in a distributed system.
+Global transactions enable to work with multiple transactional resources, typically relational databases and message queues. 
+
+
+Spring with Transaction
+------------
+The Spring Framework provides an abstraction for transaction management which delivers benefits like:
+•	Consistent programming model across different transaction APIs such as Java Transaction API (JTA), JDBC, Hibernate, Java Persistence API (JPA), and Java Data Objects (JDO).
+•	Support for declarative as well as programmatic transaction management.
+•	Most users prefer declarative transaction management, which is recommended in most cases.
+
+Programmatic vs. Declarative
+-----------
+Spring supports two types of transaction management −
+
+•	Programmatic transaction management − means that have to manage transaction with the help of programming, gives extreme flexibility, but difficult to maintain.
+
+•	Declarative transaction management − means separate transaction management from business code, only use annotations or XML-based configuration to manage all transactions.
+
+Spring transaction abstraction is defined by org.springframework.transaction.PlatformTransactionManager interface.
+
+public interface PlatformTransactionManager {
+
+    TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException;
+
+    void commit(TransactionStatus status) throws TransactionException;
+
+    void rollback(TransactionStatus status) throws TransactionException;
+}
+
+
+Mention in XML file as:
+
+<!-- Enable Annotation based Declarative Transaction Management -->
+<tx:annotation-driven proxy-target-class="true" 	transaction-manager="transactionManager" />
+
+<!-- Creating TransactionManager Bean of type DataSourceTransactionManager -->
+<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	<property name="dataSource" ref="dataSource" />
+</bean>
+
+
+For check by transaction manager :
+
+@Transactional(rollbackFor = Exception.class)
+public void create(Customer customer) throws Exception {
+	String queryCustomer = "insert into Customer (id, name) values (?,?)";
+	String queryAddress = "insert into Address (id, state,country) values (?,?,?)";
+
+	JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+
+       	jdbcTemplate.update(queryCustomer, new Object[] { customer.getId(),customer.getName() });
+	System.out.println("Inserted into Customer Table Successfully");
+
+	jdbcTemplate.update(queryAddress, new Object[] { customer.getAddress().getId(),customer.getAddress().getState(),customer.getAddress().getCountry() });
+	System.out.println("Inserted into Address Table Successfully");
+        
+	}
+
