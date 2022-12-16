@@ -1,0 +1,115 @@
+Hands On 3
+=================
+
+Hands on 1 
+Introduction to HQL and JPQL
+
+
+
+
+Hands on 2 
+Get all permanent employees using HQL
+
+
+Add method declaration in  EmployeeRepository  interface as:
+
+@Query(value="SELECT e FROM Employee e WHERE e.permanent = 1") 
+	public List<Employee> getAllPermanentEmployees(); 
+
+
+Add method in EmployeeService class as :
+
+public	List<Employee> getAllPermanentEmployees(){
+			return employeeRepository.getAllPermanentEmployees();
+		}
+
+In MainApplication add a method for test as:
+
+public static void testGetAllPermanentEmployees() { 
+LOGGER.info("Start testGetAllPermanentEmployees"); 
+List<Employee> employees = employeeService.getAllPermanentEmployees(); 
+for(Employee e:employees) {
+LOGGER.info("Permanent Employees:{}", e); 
+e.getSkillList().forEach(s->LOGGER.info("Skills:{}", s)); 
+}
+LOGGER.info("End"); 
+} 
+
+Optimizing HQL solution by using 'fetch' -----
+
+Remove these two eager fetch configurations and check the logs. The following queries would have got executed. It would have failed when getting the skill list. Since we have remove the eager fetch skill is not retrieved. 
+
+Change the query as :
+@Query(value="SELECT distinct e FROM Employee e left join fetch e.department d left join fetch e.skillList WHERE e.permanent = 1") 
+//@Query(value="SELECT e FROM Employee e WHERE e.permanent = 1") 
+	public List<Employee> getAllPermanentEmployees(); 
+
+Test it....
+
+
+
+==================
+
+Hands on 3 
+Fetch quiz attempt details using HQL
+
+
+
+
+
+===================
+
+Hands on 4 
+Get average salary using HQL  
+
+Add method declaration in  EmployeeRepository  interface as:
+
+@Query(value="SELECT AVG(e.salary) FROM Employee e") 
+	double getAverageSalary(); 
+
+
+
+Add method in EmployeeService class as :
+
+public double getAverageSalary() {
+		return employeeRepository.getAverageSalary();
+	}
+
+In MainApplication add a method for test as:
+
+public static void getAverageSalary() {
+	LOGGER.info("Start getAverageSalary"); 
+	double avg = employeeService.getAverageSalary();
+	LOGGER.info("Avg salary:{}", avg); 
+	LOGGER.info("End"); 	
+}
+
+================
+
+Hands on 5 
+Get all employees using Native Query  
+
+
+Add method declaration in  EmployeeRepository  interface as:
+
+@Query(value="SELECT * FROM employee", nativeQuery = true) 
+	List<Employee> getAllEmployeesNative(); 
+
+
+Add method in EmployeeService class as :
+
+public List<Employee> getAllEmployeesNative(){
+		return employeeRepository.getAllEmployeesNative();
+	}
+
+In MainApplication add a method for test as:
+
+public static void getAllEmployeesNative(){
+	LOGGER.info("Start getAllEmployeesNative"); 
+	List<Employee> employees = employeeService.getAllEmployeesNative(); 
+	employees.forEach(e-> LOGGER.info("Employee:{}",e));
+	
+	LOGGER.info("End"); 
+}
+
+================

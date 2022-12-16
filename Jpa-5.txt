@@ -1,0 +1,260 @@
+Hands On 3
+=================
+
+Hands on 6 
+Criteria Query  
+
+
+Find below an online retail user scenario 
+•	User goes to Amazon 
+•	Searches with keyword "laptop" 
+•	The left hand size contains the following filter criteria categories: 
+o	Customer review 
+o	Hard Disk Size 
+o	RAM Size 
+o	CPU Speed 
+o	Operating System 
+o	Weight 
+o	CPU 
+•	The user might select options available in one or more of the criteria and try a fresh search. 
+In the above given scenario, what will be the where clause of the HQL query that you will run on the product? 
+ 
+The where clause varies based on the criteria selected by the user. We have to dynamically frame the where clause filters based on the criteria selected by user. 
+
+
+
+We apply this concepts related to our Stocks table.
+
+===============
+Entity class Stock already defined as :
+
+@Entity
+@Table(name="stocks")
+public class Stock {
+@Id
+@GeneratedValue(strategy = GenerationType.AUTO)   
+@Column(name="st_id")
+private Integer id;
+@Column(name="st_code")
+private String stCode ;
+@Column(name="stock_date")
+private Date stockDate ;
+@Column(name="st_open")
+private Double stOpen;
+@Column(name="st_close")
+private Double stClose;
+@Column(name="st_volume")
+private Long stVolume;
+
+....
+}
+
+
+=============
+Create Interface  --  StockDaoInterface as DAO with custom find method:
+
+package com.pack.springbootDataJpa1.dao;
+
+import java.util.List;
+
+import com.pack.springbootDataJpa1.model.Stock;
+
+public interface StockDaoInterface {
+	List<Stock> findStocks(String code, String volume, String open , String close, String date);
+}
+
+
+Create class  by implementing interface :
+------------------------------------
+
+package com.pack.springbootDataJpa1.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import com.pack.springbootDataJpa1.model.Stock;
+
+@Repository
+public class StockRepositoryImpl implements StockDaoInterface{
+	
+	@Autowired
+	EntityManager em;
+ 
+    public List<Stock> findStocks(String code, String volume, String open , String close, String date) {
+    	
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Stock> cq = cb.createQuery(Stock.class);
+ 
+        Root<Stock> stock = cq.from(Stock.class);
+        List<Predicate> predicates = new ArrayList<>();
+        
+        
+        if(code!=null && code.length()>0) {
+        	predicates.add(cb.equal(stock.get("stCode"), code));
+        }
+        
+        if(volume!=null && volume.length()>0) {
+        	predicates.add(cb.greaterThan(stock.get("stVolume"), Long.parseLong(volume)));
+        }
+        
+        if(open!=null && open.length()>0) {
+        	predicates.add(cb.greaterThan(stock.get("stOpen"), Double.parseDouble(open)));
+        }
+        if(close!=null && close.length()>0) {
+        	predicates.add(cb.greaterThan(stock.get("stClose"), Double.parseDouble(close)));
+        }
+        
+       
+        cq.where(predicates.toArray(new Predicate[0])); // Here new Predicate[0] makes typecast as Predicate
+       
+        List<Stock> res=  em.createQuery(cq).getResultList();
+        return res;
+    }
+}
+
+
+
+
+========== Now update StockRepository with this new interface as :
+
+@Repository
+public interface StockRepository extends CrudRepository<Stock, String> , StockDaoInterface {
+....
+}
+
+====  Add a new method in StockService class to use this repository method as ;
+
+@Transactional 
+	public List<Stock> getAllStocks(String code, String volume, String open, String close, String date) {
+		List<Stock>  slist = repo.findStocks(code, volume, open, close, date);
+		return slist;
+	}
+
+====  Create a Controller class to make web view for Stock as :
+
+package com.pack.springbootDataJpa1.controller;
+
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+import com.pack.springbootDataJpa1.model.Stock;
+import com.pack.springbootDataJpa1.service.StockService;
+
+@Controller
+public class StockController {
+
+	@Autowired
+	StockService stockService;
+	
+	@RequestMapping(path="/viewstock", method=RequestMethod.GET)
+	public String getData() {
+		return "viewstock";
+		
+	}
+	  
+	  @RequestMapping(path="/getstock", method=RequestMethod.GET)
+    	public ModelAndView getCountry(HttpServletRequest request) {
+		  String code = request.getParameter("code");
+		  String volume = request.getParameter("volume");
+		  String open = request.getParameter("open");
+		  String close  = request.getParameter("close");
+		  String date = request.getParameter("date");
+		  
+		     List<Stock> slist= stockService.getAllStocks(code,volume,open,close,date);
+		      if(slist!=null || slist.size()>0) {
+		    	  ModelAndView mav = new ModelAndView("viewstock");
+		    	  mav.addObject("slist",slist);
+		    	  return mav;
+		      }
+		      else {
+   	    	    ModelAndView mav = new ModelAndView("viewstock");
+		        return mav;
+		      }
+		}
+
+	
+	  
+}
+
+
+==== Make a jsp page under page folder as :  viewstock.jsp
+
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix = "fmt" uri = "http://java.sun.com/jsp/jstl/fmt" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Country Search</title>
+<style>
+    .error {
+        color: red; font-weight: bold;
+    }
+</style>
+</head>
+<body>
+<div align="center">
+
+
+<hr>
+
+<form action="getstock" method="get">
+<table>
+<tr>
+<td align="left" width="20%">Choose Stock Code to search: </td>
+<td align="left" width="40%"><input type="text" name="code" size="30"/>
+<input type="submit" value="search"/></td>
+</tr>
+<tr>
+<td align="left" width="20%">Enter Minimum Volume: </td>
+<td align="left" width="40%"><input type="text" name="volume" size="30"/></td>
+</tr>
+<tr>
+<td align="left" width="20%">Enter Minimum Opening Stock: </td>
+<td align="left" width="40%"><input type="text" name="open" size="30"/></td>
+</tr>
+<tr>
+<td align="left" width="20%">Enter Minimum Closing Stock: </td>
+<td align="left" width="40%"><input type="text" name="close" size="30"/></td>
+</tr>
+<tr>
+<td align="left" width="20%">Enter a Particular Date: </td>
+<td align="left" width="40%"><input type="text" name="date" size="30"/></td>
+</tr>
+</table>
+</form> 
+<hr>
+<table>
+<tbody>
+<tr><th>Code</th><th>Date</th><th>Open</th><th>Close</th><th>Volume</th></tr>
+<c:forEach items="${slist}" var="stock">
+<tr><td><c:out value="${stock.stCode}"></c:out></td>
+<td><fmt:formatDate pattern="dd-MM-yyyy" value="${stock.stockDate}"/></td>
+<td><c:out value="${stock.stOpen}"></c:out></td>
+<td><c:out value="${stock.stClose}"></c:out></td>
+<td><c:out value="${stock.stVolume}"></c:out></td>
+</tr>
+</c:forEach>
+</tbody>
+</table>
+
+</div>
+</body>
+</html>
+
+
+

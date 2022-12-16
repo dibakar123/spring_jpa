@@ -1,0 +1,1458 @@
+Create table in MySQL As:
+
+
+
+CREATE TABLE `employee` (
+
+ `id` int(11) NOT NULL,
+
+ `date_of_birth` datetime DEFAULT NULL,
+
+ `name` varchar(255) DEFAULT NULL,
+
+ `permanent` bit(1) NOT NULL,
+
+ `salary` double NOT NULL,
+
+ `em_dp_id` int(11) DEFAULT NULL,
+
+ PRIMARY KEY (`id`)
+
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+insert into employee values (2,'1987-12-10','Ranjan biswas',1,12115.89,10);
+
+CREATE TABLE `department` (
+
+ `id` int(11) NOT NULL,
+
+ `name` varchar(255) DEFAULT NULL,
+
+ PRIMARY KEY (`id`)
+
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+insert into department values (10,'Admin');
+
+insert into department values (20,'Sales');
+
+
+
+
+
+=============Create entity class for employee
+
+
+
+package com.pack.springbootDataJpa1.model;
+
+
+
+import java.text.SimpleDateFormat;
+
+import java.util.Date;
+
+import java.util.Set;
+
+
+
+import javax.persistence.Entity;
+
+import javax.persistence.FetchType;
+
+import javax.persistence.Id;
+
+import javax.persistence.JoinColumn;
+
+import javax.persistence.JoinTable;
+
+import javax.persistence.ManyToMany;
+
+import javax.persistence.ManyToOne;
+
+
+
+@Entity
+
+public class Employee {
+
+@Id
+
+private int id;
+
+private String name;
+
+private double salary;
+
+private boolean permanent;
+
+private Date dateOfBirth;
+
+
+
+@ManyToOne
+
+@JoinColumn(name="em_dp_id")
+
+private Department department;
+
+
+
+
+
+public Department getDepartment() {
+
+ return department;
+
+}
+
+public void setDepartment(Department department) {
+
+ this.department = department;
+
+}
+
+public int getId() {
+
+ return id;
+
+}
+
+public void setId(int id) {
+
+ this.id = id;
+
+}
+
+public String getName() {
+
+ return name;
+
+}
+
+public void setName(String name) {
+
+ this.name = name;
+
+}
+
+public double getSalary() {
+
+ return salary;
+
+}
+
+public void setSalary(double salary) {
+
+ this.salary = salary;
+
+}
+
+public boolean isPermanent() {
+
+ return permanent;
+
+}
+
+public void setPermanent(boolean permanent) {
+
+ this.permanent = permanent;
+
+}
+
+public Date getDateOfBirth() {
+
+ return dateOfBirth;
+
+}
+
+public void setDateOfBirth(Date dateOfBirth) {
+
+ this.dateOfBirth = dateOfBirth;
+
+}
+
+@Override
+
+public String toString() {
+
+ SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+ return "Employee [id=" + id + ", name=" + name + ", salary=" + salary + ", permanent=" + permanent
+
+  + ", dateOfBirth=" + sdf.format(dateOfBirth) + ", department=" + department + "]";
+
+}
+
+
+
+/*@ManyToMany//(fetch=FetchType.EAGER)
+
+@JoinTable(name = "employee_skill",
+
+joinColumns = @JoinColumn(name = "es_em_id"),
+
+inverseJoinColumns = @JoinColumn(name = "es_sk_id"))
+
+private Set<Skill> skillList;
+
+
+
+
+
+public Set<Skill> getSkillList() {
+
+ return skillList;
+
+}
+
+public void setSkillList(Set<Skill> skillList) {
+
+ this.skillList = skillList;
+
+}
+
+*/
+
+
+
+
+
+
+
+}
+
+
+
+
+
+====Entoty class For Department
+
+
+
+import java.util.Set;
+
+
+
+import javax.persistence.Entity;
+
+import javax.persistence.FetchType;
+
+import javax.persistence.Id;
+
+import javax.persistence.OneToMany;
+
+
+
+@Entity
+
+public class Department {
+
+@Id
+
+private int id;
+
+private String name;
+
+public int getId() {
+
+ return id;
+
+}
+
+public void setId(int id) {
+
+ this.id = id;
+
+}
+
+public String getName() {
+
+ return name;
+
+}
+
+public void setName(String name) {
+
+ this.name = name;
+
+}
+
+@Override
+
+public String toString() {
+
+ return "Department [id=" + id + ", name=" + name + "]";
+
+}
+
+
+
+
+
+@OneToMany(mappedBy = "department")//, fetch=FetchType.EAGER)
+
+private Set<Employee> employeeList;
+
+
+
+public Set<Employee> getEmployeeList() {
+
+ return employeeList;
+
+}
+
+public void setEmployeeList(Set<Employee> employeeList) {
+
+ this.employeeList = employeeList;
+
+}
+
+
+
+
+
+
+
+}
+
+
+
+====Make repository for Employee and Department
+
+
+
+
+
+
+
+@Repository
+
+public interface DepartmentRepository extends CrudRepository<Department, Integer> {
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+Hands on 4
+
+Implement many to one relationship between Employee and Department
+
+
+
+=====Create Service class for Employee , Department 
+
+
+
+package com.pack.springbootDataJpa1.service;
+
+
+
+import java.util.List;
+
+
+
+import org.apache.logging.log4j.Logger;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.data.jpa.repository.Query;
+
+import org.springframework.stereotype.Service;
+
+import org.springframework.transaction.annotation.Transactional;
+
+
+
+import com.pack.springbootDataJpa1.model.Employee;
+
+import com.pack.springbootDataJpa1.repository.EmployeeRepository;
+
+
+
+@Service
+
+public class EmployeeService {
+
+
+
+ @Autowired
+
+ EmployeeRepository employeeRepository;
+
+	
+
+
+
+}
+
+
+
+
+
+====
+
+package com.pack.springbootDataJpa1.service;
+
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.stereotype.Service;
+
+import org.springframework.transaction.annotation.Transactional;
+
+
+
+import com.pack.springbootDataJpa1.model.Department;
+
+import com.pack.springbootDataJpa1.model.Employee;
+
+import com.pack.springbootDataJpa1.repository.DepartmentRepository;
+
+import com.pack.springbootDataJpa1.repository.EmployeeRepository;
+
+
+
+@Service
+
+public class DepartmentService {
+
+ @Autowired
+
+ DepartmentRepository departmentRepository;
+
+	
+
+
+
+}
+
+
+
+
+
+=== Add this method in EmployeeService class as : for search and add an employee
+
+
+
+@Transactional
+
+ public Employee get(int id) {
+
+ return employeeRepository.findById(id).get();
+
+ }
+
+
+
+
+
+@Transactional
+
+ public void save(Employee employee) {
+
+ employeeRepository.save(employee);
+
+ }
+
+===========
+
+ Add a new method in DepartmentService to get an existing department object:
+
+
+
+ @Transactional
+
+ public Department get(int id) {
+
+ return departmentRepository.findById(id).get();
+
+ }
+
+
+
+===============
+
+Add this properties and method in MainApplication to add an employee
+
+
+
+@SpringBootApplication
+
+
+
+public class MainApplication {
+
+
+
+private static final Logger LOGGER = LoggerFactory.getLogger(MainApplication.class);
+
+private static EmployeeService employeeService;
+
+private static DepartmentService departmentService;
+
+
+
+private static void testAddEmployee() {
+
+ LOGGER.info("Start testAddEmployee");
+
+ Department department = departmentService.get(20);
+
+ Employee employee = new Employee();
+
+ employee.setId(1);
+
+ employee.setName("Biman Das");
+
+ employee.setPermanent(true);
+
+ employee.setSalary(21345.89);
+
+ SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+ try {
+
+ employee.setDateOfBirth(sdf.parse("1983-10-11"));
+
+ } catch (ParseException e) {
+
+ // TODO Auto-generated catch block
+
+ e.printStackTrace();
+
+ }
+
+ employee.setDepartment(department);
+
+ employeeService.save(employee);
+
+ LOGGER.info("End");
+
+}
+
+	
+
+public static void main(String[] args) {
+
+ctx = SpringApplication.run(MainApplication.class, args);
+
+
+
+ employeeService = ctx.getBean(EmployeeService.class);
+
+ departmentService = ctx.getBean(DepartmentService.class);
+
+ 
+
+
+
+ testAddEmployee();
+
+
+
+}
+
+
+
+}
+
+
+
+
+
+
+
+===  To search an employee based on id and shows employee + his/her department info also, add a new method in Mainapplication
+
+
+
+private static void testGetEmployee() {
+
+LOGGER.info("Start testGetEmployee");
+
+Employee employee = employeeService.get(2);
+
+LOGGER.info("Employee:{}", employee);
+
+LOGGER.info("Department:{}", employee.getDepartment());
+
+LOGGER.info("End");
+
+}
+
+
+
+
+
+And from  main method call this method:
+
+ testGetEmployee();
+
+
+
+
+
+
+
+============Hands on 5
+
+Implement one to many relationship between Employee and Department
+
+
+
+
+
+•	Include new method testGetDepartment()   within MainApplication  and test it as:
+
+===========================
+
+private static void testGetDepartment() {
+
+ LOGGER.info("Start testGetDepartment");
+
+ Department department = departmentService.get(20);
+
+ LOGGER.info("Department:{}", department);
+
+ Set<Employee> elist = department.getEmployeeList();
+
+ for(Employee e:elist)
+
+ LOGGER.info("Employee:{}", e);
+
+ LOGGER.info("End");
+
+}
+
+=========call from main
+
+ testGetDepartment();
+
+
+
+// it will show exception due to lazy loading issue, to solve these issue, need to change in your Department Entity class for mapping section as :
+
+
+
+@OneToMany(mappedBy = "department", fetch=FetchType.EAGER)
+
+private Set<Employee> employeeList;
+
+
+
+
+
+Now test the method......
+
+
+
+
+
+=============  For update an employee information
+
+
+
+Add this method in MainApplication  and test it from main method::::
+
+
+
+
+
+private static void testUpdateEmployee() {
+
+ LOGGER.info("Start testUpdateEmployee");
+
+ Employee employee = employeeService.get(1);
+
+ Department department = departmentService.get(20);
+
+employee.setName("Rajesh Sen");
+
+ employee.setDepartment(department);
+
+ employeeService.save(employee);
+
+ LOGGER.info("End");
+
+}
+
+
+
+
+
+testUpdateEmployee();
+
+
+
+
+
+
+
+
+
+================
+
+Hands on 6
+
+Implement many to many relationship between Employee and Skill
+
+
+
+CREATE TABLE `skill` (
+
+ `id` int(11) NOT NULL,
+
+ `name` varchar(255) DEFAULT NULL,
+
+ PRIMARY KEY (`id`)
+
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+
+
+CREATE TABLE `employee_skill` (
+
+ `es_em_id` int(11) NOT NULL,
+
+ `es_sk_id` int(11) NOT NULL,
+
+ PRIMARY KEY (`es_em_id`,`es_sk_id`),
+
+ KEY `FK99x0kgg4s0t2j8i9kj91cf3la` (`es_sk_id`)
+
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+
+
+Make asssociation between 2 classes Employee and other is Skill , so update those classes.....
+
+
+
+
+
+package com.pack.springbootDataJpa1.model;
+
+
+
+import java.text.SimpleDateFormat;
+
+import java.util.Date;
+
+import java.util.Set;
+
+
+
+import javax.persistence.Entity;
+
+import javax.persistence.FetchType;
+
+import javax.persistence.Id;
+
+import javax.persistence.JoinColumn;
+
+import javax.persistence.JoinTable;
+
+import javax.persistence.ManyToMany;
+
+import javax.persistence.ManyToOne;
+
+
+
+@Entity
+
+public class Employee {
+
+@Id
+
+private int id;
+
+private String name;
+
+private double salary;
+
+private boolean permanent;
+
+private Date dateOfBirth;
+
+
+
+@ManyToOne
+
+@JoinColumn(name="em_dp_id")
+
+private Department department;
+
+
+
+
+
+public Department getDepartment() {
+
+ return department;
+
+}
+
+public void setDepartment(Department department) {
+
+ this.department = department;
+
+}
+
+public int getId() {
+
+ return id;
+
+}
+
+public void setId(int id) {
+
+ this.id = id;
+
+}
+
+public String getName() {
+
+ return name;
+
+}
+
+public void setName(String name) {
+
+ this.name = name;
+
+}
+
+public double getSalary() {
+
+ return salary;
+
+}
+
+public void setSalary(double salary) {
+
+ this.salary = salary;
+
+}
+
+public boolean isPermanent() {
+
+ return permanent;
+
+}
+
+public void setPermanent(boolean permanent) {
+
+ this.permanent = permanent;
+
+}
+
+public Date getDateOfBirth() {
+
+ return dateOfBirth;
+
+}
+
+public void setDateOfBirth(Date dateOfBirth) {
+
+ this.dateOfBirth = dateOfBirth;
+
+}
+
+@Override
+
+public String toString() {
+
+ SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+ return "Employee [id=" + id + ", name=" + name + ", salary=" + salary + ", permanent=" + permanent
+
+  + ", dateOfBirth=" + sdf.format(dateOfBirth) + ", department=" + department + "]";
+
+}
+
+
+
+@ManyToMany//(fetch=FetchType.EAGER)
+
+@JoinTable(name = "employee_skill",
+
+joinColumns = @JoinColumn(name = "es_em_id"),
+
+inverseJoinColumns = @JoinColumn(name = "es_sk_id"))
+
+private Set<Skill> skillList;
+
+
+
+
+
+public Set<Skill> getSkillList() {
+
+ return skillList;
+
+}
+
+public void setSkillList(Set<Skill> skillList) {
+
+ this.skillList = skillList;
+
+}
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+------
+
+
+
+package com.pack.springbootDataJpa1.model;
+
+
+
+
+
+
+
+import java.util.Set;
+
+
+
+
+
+
+
+import javax.persistence.Entity;
+
+
+
+import javax.persistence.FetchType;
+
+
+
+import javax.persistence.Id;
+
+
+
+import javax.persistence.ManyToMany;
+
+
+
+
+
+
+
+@Entity
+
+
+
+public class Skill {
+
+
+
+@Id
+
+
+
+private int id;
+
+
+
+private String name;
+
+
+
+public int getId() {
+
+
+
+ return id;
+
+
+
+}
+
+
+
+public void setId(int id) {
+
+
+
+ this.id = id;
+
+
+
+}
+
+
+
+public String getName() {
+
+
+
+ return name;
+
+
+
+}
+
+
+
+public void setName(String name) {
+
+
+
+ this.name = name;
+
+
+
+}
+
+
+
+
+
+
+
+@Override
+
+
+
+public String toString() {
+
+
+
+ return "Skill [id=" + id + ", name=" + name + "]";
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+@ManyToMany(mappedBy = "skillList" , fetch=FetchType.EAGER)
+
+
+
+private Set<Employee> employeeList;
+
+
+
+
+
+
+
+public Set<Employee> getEmployeeList() {
+
+
+
+ return employeeList;
+
+
+
+}
+
+
+
+public void setEmployeeList(Set<Employee> employeeList) {
+
+
+
+ this.employeeList = employeeList;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+=================Add repository for Skill
+
+
+
+
+
+
+
+@Repository
+
+
+
+public interface SkillRepository extends CrudRepository<Skill, Integer> {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+=========Add Service for Skill as :
+
+
+
+
+
+
+
+package com.pack.springbootDataJpa1.service;
+
+
+
+
+
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+
+
+import org.springframework.stereotype.Service;
+
+
+
+import org.springframework.transaction.annotation.Transactional;
+
+
+
+
+
+
+
+import com.pack.springbootDataJpa1.model.Employee;
+
+
+
+import com.pack.springbootDataJpa1.model.Skill;
+
+
+
+import com.pack.springbootDataJpa1.repository.EmployeeRepository;
+
+
+
+import com.pack.springbootDataJpa1.repository.SkillRepository;
+
+
+
+
+
+
+
+@Service
+
+
+
+public class SKillService {
+
+
+
+ @Autowired
+
+
+
+ SkillRepository skillRepository;
+
+
+
+
+
+
+
+ @Transactional
+
+
+
+ public Skill get(int id) {
+
+
+
+ return skillRepository.findById(id).get();
+
+
+
+ }
+
+
+
+
+
+
+
+ @Transactional
+
+
+
+ public void save(Skill skill) {
+
+
+
+ skillRepository.save(skill);
+
+
+
+ }
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+==========================
+
+
+
+Add some data in skill table from MySQL:
+
+======
+
+insert into skill values (100,'Java');
+
+insert into skill values (200,'Python');
+
+insert into skill values (300,'Hadoop');
+
+
+
+
+
+====To get skills for an employee , update method testGetEmployee() in MainApplication as
+
+
+
+private static void testGetEmployee() {
+
+LOGGER.info("Start testGetEmployee");
+
+Employee employee = employeeService.get(2);
+
+LOGGER.info("Employee:{}", employee);
+
+LOGGER.info("Department:{}", employee.getDepartment());
+
+LOGGER.info("Skills:{}", employee.getSkillList());
+
+LOGGER.info("End");
+
+}
+
+
+
+
+
+call it  testGetEmployee()
+
+
+
+== Makes exception , so please change in Employee class mapping for Skill as :::
+
+
+
+@ManyToMany(fetch=FetchType.EAGER)
+
+
+
+@JoinTable(name = "employee_skill",
+
+
+
+joinColumns = @JoinColumn(name = "es_em_id"),
+
+
+
+inverseJoinColumns = @JoinColumn(name = "es_sk_id"))
+
+
+
+private Set<Skill> skillList;
+
+
+
+
+
+
+
+==== Now add skills to an existing emplyee===
+
+
+
+Add a property in MainApplication as :
+
+
+
+private static SKillService sKillService;
+
+
+
+
+
+
+
+
+
+Design a method in MainApplication as :
+
+
+
+private static void testAddSkillToEmployee() {
+
+ LOGGER.info("Start testAddSkillToEmployee");
+
+ Employee employee = employeeService.get(2);
+
+ Skill skill1 = sKillService.get(1);
+
+ employee.getSkillList().add(skill1);
+
+ Skill skill2 = sKillService.get(2);
+
+ employee.getSkillList().add(skill2);
+
+ employeeService.save(employee);
+
+ LOGGER.info("End");
+
+}
+
+
+
+now call:
+
+Do it in main
+
+
+
+sKillService = ctx.getBean(SKillService.class);
+
+testAddSkillToEmployee();
+
+testGetEmployee();
+
+
+
+===============
+
+
+
+
+
+===========
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
