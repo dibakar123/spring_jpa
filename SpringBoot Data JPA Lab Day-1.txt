@@ -1,0 +1,289 @@
+Make a java maven project : jpaapp1
+
+<parent>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-parent</artifactId>
+	<version>2.1.6.RELEASE</version>
+	<relativePath/> 
+</parent>
+<properties>
+	<java.version>1.8</java.version>
+</properties>
+<dependencies>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+<groupId>mysql</groupId>
+<artifactId>mysql-connector-java</artifactId>
+<scope>runtime</scope>
+</dependency>
+</dependencies>
+
+For MYSQL, follows these steps:
+create database jpadb1;
+use jpadb1;
+create table country(co_code varchar(2) primary key, co_name varchar(50));
+insert into country values ('IN', 'India');
+insert into country values ('US', 'United States of America');
+insert into country values ('NI', 'Indonesia');
+insert into country values ('UK', 'United kingdom');
+
+
+====
+
+Make a mainapplication as:
+
+@SpringBootApplication
+public class MainApp {
+
+	public static void main(String[] args) {
+		SpringApplication.run(MainApp.class, args);
+
+	}
+
+}
+
+
+
+=====Create a file application.properties under src/main/resources
+Here given all jdbc information about our database:
+
+spring.datasource.url=jdbc:mysql://localhost/jpadb1?useSSL=false
+spring.datasource.username=root
+spring.datasource.password=dibakar
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
+
+
+====Now make entity class Country (same as table name) under package : com.pack.entity
+
+package com.pack.entity;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="country") // here it is optional
+public class Country {
+@Id
+@Column(name = "co_code")
+private String code;
+@Column(name = "co_name")
+private String name;
+//add setter & getter
+}
+
+=== Now make an interface for our Entity to do basic CRUD on table Country as :
+package com.pack.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.pack.entity.Country;
+
+@Repository
+public interface CountryRepository extends JpaRepository<Country, String> {
+
+}
+
+
+===For Service layer :
+There is an interface:
+
+package com.pack.service;
+
+import com.pack.entity.Country;
+
+public interface CountryService {
+   public void addCountry(Country country);
+}
+
+Now implement as a class: CountryServiceImpl
+
+@Service
+public class CountryServiceImpl implements CountryService {
+    @Autowired
+	CountryRepository repo;
+	
+	public void addCountry(Country country) {
+		repo.save(country);
+	}
+
+}
+
+
+...Now update mainapp as:
+
+public static void main(String[] args) {
+		ApplicationContext ctx =   SpringApplication.run(MainApp.class, args);
+		
+		CountryService service = ctx.getBean(CountryService.class);
+		Country country = new Country();
+		country.setCode("CC");
+		country.setName("DD");
+		service.addCountry(country);
+		
+
+	}
+
+===============end of record insertion using Spring Boot Data JPA
+
+
+------------------- For Update entity :
+add method in service interface as :   public void editCountry(Country country);
+
+Make its implementation in serviceimpl class as:
+public void editCountry(Country country) {
+		repo.save(country);
+		
+	}
+
+--Update MainApp as :
+Country country = new Country();
+country.setCode("CC");
+country.setName("IndiaIndia");
+service.editCountry(country);
+
+------------------- For Remove entity :
+add method in service interface as : 
+public void removeCountry(String code);
+
+Make its implementation in serviceimpl class as:
+public void removeCountry(String code) {
+		repo.deleteById(code);
+		
+	}
+
+--Update MainApp as :
+service.removeCountry("CC");
+
+=====================  Searching data using ID
+Add in service interface as:
+public Country searchByCode(String code);
+
+implement it in implemented class as:
+
+public Country searchByCode(String code) {
+		/*Optional<Country> country = repo.findById(code);
+		if(country.isPresent())
+			return country.get();
+		else
+			return null;*/
+		Country country = repo.findById(code).orElse(null);
+		return country;
+	}
+
+--Update MainApp as :
+Country country = service.searchByCode("IN11");
+if(country!=null) {
+	System.out.println(country.getName());
+}
+else {
+   System.out.println("Country code not found"); 
+}
+
+==========To get all countries:
+public List<Country> getAll();
+
+public List<Country> getAll() {
+	return repo.findAll();
+}
+
+
+List<Country> list = service.getAll();
+for(Country c: list) {
+     System.out.println(c.getCode()+" "+c.getName());
+}
+
+==============Customized query   using JPQL
+
+There is a case where we need to search countries by giving a set or country code
+In repository , add a new method:
+@Query(value = "select c from Country c where c.code=?1 or c.code=?2")
+public List<Country> getCountriesByIds( String code1,  String code2);
+
+Now update service layer as:
+public List<Country> getAll(String code1, String code2);
+
+implement in class as:
+public List<Country> getAll(String code1, String code2) {
+		return repo.getCountriesByIds(code1, code2);
+}
+
+now update main as:
+List<Country> list = service.getAll("IN", "NI");
+for(Country c: list) {
+	System.out.println(c.getCode()+" "+c.getName());
+}
+
+==============Customized query   using JPQL
+There is a case where we need to show countries based on  country code desc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

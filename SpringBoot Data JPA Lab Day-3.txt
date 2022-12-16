@@ -1,0 +1,216 @@
+Demo For Hibernate (using Hibernate 4)===============
+
+Make a java maven project :hibernateapp1
+
+<dependencies>
+       <dependency>
+	<groupId>org.hibernate</groupId>
+	<artifactId>hibernate-core</artifactId>
+	<version>4.3.10.Final</version>
+   </dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.14</version>
+</dependency>
+  </dependencies>
+
+===Make a new file under src/main/resources as hibernate.cfg.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration> 
+    <session-factory> 
+         <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+         <property name="connection.url">jdbc:mysql://localhost/datajpa?useSSL=false</property> 
+         <property name="connection.username">root</property> 
+         <property name="connection.password">dibakar</property> 
+         <property name="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</property>
+         <property name="connection.pool_size">1</property> 
+
+         <property name="current_session_context_class">thread</property> 
+         <property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
+         <property name="show_sql">true</property> 
+         <property name="hbm2ddl.auto">create</property>           
+        </session-factory> 
+ </hibernate-configuration>
+
+====
+====Now make entity class Product (same as table name) under package : com.pack.entity
+
+@Entity
+public class Product {
+@Id
+private int pid;
+private String pname;
+private int price;
+
+//add setter & getter
+}
+
+=== Now make a service class For Service layer : :  ProductService 
+
+package com.pack.service;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+
+import com.pack.entity.Product;
+
+public class ProductService {
+
+	public Product addProduct() {
+		Product product = null;
+		try {
+	       Configuration configuration = new Configuration().configure();
+	        StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder()applySettings(configuration.getProperties());
+	        final SessionFactory factory = configuration.buildSessionFactory(builder.build());
+                        Session session = factory.openSession();
+	        Transaction transaction = session.beginTransaction();
+	         product = new Product();
+	         product.setPid(101);
+                         product.setPname("Book");
+	         product.setPrice(12000);
+	         session.save(product);
+	         transaction.commit();
+	          session.close();
+		}
+		catch(Exception e){	System.out.println("Error:"+e);	}
+		return product;
+	}
+}
+
+ Now make a main application for testing ==
+
+import com.pack.service.ProductService;
+
+public class MainApp {
+
+	public static void main(String[] args) {
+		ProductService service = new ProductService();
+		service.addProduct();
+		System.exit(0);
+
+	}
+
+}
+=== add registration in hibernate.cfg.xml for your entity class : Product as follows by adding this line:
+<mapping class="com.pack.entity.Product"/> 
+
+== Now run and test your application=========================
+
+==== To search object by id :
+
+add a method in  service class aS :
+
+public Product getProduct(int pid) {
+		Product product = null;
+		try {
+			Configuration configuration = new Configuration().configure();
+	        StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder()
+	        		                                 .applySettings(configuration.getProperties());
+	        final SessionFactory factory = configuration.buildSessionFactory(builder.build());
+		    Session session = factory.openSession();
+		    product = (Product)session.get( Product.class , pid);
+		    session.close();
+		}
+		catch(Exception e){	System.out.println("Error:"+e);	}
+		return product;
+	}
+
+-- UPDATE mainapp as :
+Product product = service.getProduct(102);
+System.out.println(product.getPname()+" "+product.getPrice());
+
+--now run application and test
+
+=================================
+To make custom query in hibernate:  add a method in service layer:
+
+@SuppressWarnings("unchecked")
+	public List<Product> getProductsByPrice(int price) {
+		List<Product> list = null;
+		try {
+			Session session = new MyConfig().getSession();
+			Query query = session.createQuery("select p from Product p where p.price>:price");
+			query.setParameter("price", price);
+		    list = (List<Product> )query.list();
+		    session.close();
+		}
+		catch(Exception e){	System.out.println("Error:"+e);	}
+		return list;
+	}
+
+
+
+Update mainapp as:
+List<Product> products = service.getProductsByPrice(10);
+for(Product product:products)
+    System.out.println(product.getPname()+" "+product.getPrice());
+
+Run this app..
+
+===============================
+Demo for Criteria:
+
+Add a method in service layer as:
+
+@SuppressWarnings("unchecked")
+	public List<Product> getProductsAll(String name , int price) {
+		Criteria cr = new MyConfig().getSession().createCriteria(Product.class);
+		if(price>0)
+		cr.add(Restrictions.ge("price", price));
+		if(name!=null) {
+			cr.add(Restrictions.eq("pname", name));
+		}
+		List<Product> list = cr.list();
+	    return list;
+
+	}
+
+
+
+Mainapp update as:
+List<Product> products = service.getProductsAll("Pen",0);
+		for(Product product:products)
+		    System.out.println(product.getPname()+" "+product.getPrice());
+		System.exit(0);
+
+
+
+
+===================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

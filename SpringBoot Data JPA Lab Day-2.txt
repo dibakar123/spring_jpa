@@ -1,0 +1,366 @@
+Make a java maven project : jpaapp2
+
+<parent>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-parent</artifactId>
+	<version>2.1.6.RELEASE</version>
+	<relativePath/> 
+</parent>
+<properties>
+	<java.version>1.8</java.version>
+</properties>
+<dependencies>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+<groupId>mysql</groupId>
+<artifactId>mysql-connector-java</artifactId>
+<scope>runtime</scope>
+</dependency>
+</dependencies>
+
+For MYSQL, follows these steps:
+
+
+
+====
+
+Make a mainapplication as:
+
+@SpringBootApplication
+public class MainApp {
+
+	public static void main(String[] args) {
+		SpringApplication.run(MainApp.class, args);
+
+	}
+
+}
+
+
+
+=====Create a file application.properties under src/main/resources
+Here given all jdbc information about our database:
+
+spring.datasource.url=jdbc:mysql://localhost/jpadb1?useSSL=false
+spring.datasource.username=root
+spring.datasource.password=dibakar
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
+spring.jpa.hibernate.ddl-auto=create
+
+Now demo for association:  OneToOne
+There is an employee table and account table, every employee has a single account .
+
+====Now make entity class Employee and Account package : com.pack.entity
+@Entity
+public class Employee {
+@Id
+@GeneratedValue(strategy=GenerationType.AUTO)
+private int empId;
+private String empName;
+private int salary;
+@OneToOne
+private Account account;
+}
+
+
+@Entity
+public class Account {
+@Id
+@GeneratedValue(strategy=GenerationType.AUTO)	
+private int accountNo;
+private int balance;
+@OneToOne
+private Employee employee;
+}
+
+**It keeps bi-directional mapping  , because both tables maintain foreign key colomn and in java level , both keeps other kind of entity objects.
+
+**if it keeps uni-direction , then map should be changed as:  
+Here , Fk is in Employee table , but not in Account table, because used by "mapped by"
+
+@Entity
+public class Account {
+@Id
+@GeneratedValue(strategy=GenerationType.AUTO)	
+private int accountNo;
+private int balance;
+@OneToOne(mappedBy = "account")
+private Employee employee;
+}
+
+==Create repositories for basic CRUD
+
+@Repository
+public interface EmployeeRepository extends JpaRepository<Employee, Integer>{
+
+}
+
+
+@Repository
+public interface AccountRepository extends JpaRepository<Account, Integer>{
+
+}
+==Now make a service layer to add record for Employee and Account
+@Service
+public class JpaDbService {
+@Autowired
+EmployeeRepository eRepo;
+@Autowired
+AccountRepository aRepo;
+
+    @Transactional
+	public void testOneToOneForInsertData() {
+		Account account = new Account();
+		account.setBalance(12000);
+		
+		Employee employee = new Employee();
+		employee.setEmpName("Raja Sen");
+		employee.setSalary(23000);
+		
+		account.setEmployee(employee);
+		employee.setAccount(account);
+		
+		aRepo.save(account);
+		eRepo.save(employee);
+	}
+	
+}
+
+==Now test mainapp for onetoone map:
+public static void main(String[] args) {
+		ApplicationContext ctx =   SpringApplication.run(MainApp.class, args);
+		
+		JpaDbService service = ctx.getBean(JpaDbService.class);
+		service.testOneToOneForInsertData();
+
+	}
+
+====================Demo For onetomany and manytoone  association ============
+Entities : One employee works in a department and each department has multiple employees
+
+@Entity
+public class Emp {
+@Id
+private int empNo;
+private String empName;
+private int empSalary;
+@ManyToOne
+private Department department;
+
+}
+
+@Entity
+public class Department {
+@Id
+private int deptNo;
+private String deptName;
+@OneToMany
+private List<Emp> empList;
+}
+
+**if we run application , we get 3 tables , but 3rd asscociated table we do not need , so avoid it by updating code for Department class as follows:
+@Entity
+public class Department {
+@Id
+private int deptNo;
+private String deptName;
+@OneToMany(mappedBy = "department")
+private List<Emp> empList;
+}
+
+==To do CRUD options, create repositories:
+@Repository
+public interface EmpRepository extends JpaRepository<Emp, Integer>{
+
+}
+
+
+@Repository
+public interface DepartmentRepository extends JpaRepository<Department, Integer>{
+
+}
+
+==Now make a service layer : add a new method
+
+@Transactional
+public void testOneToManyForInsertData() {
+	Department department = new Department();
+	department.setDeptNo(101);
+	department.setDeptName("Sales");
+	
+	Emp emp1 = new Emp();
+	emp1.setEmpNo(1);  emp1.setEmpName("Raja"); 
+	emp1.setEmpSalary(12000); emp1.setDepartment(department);
+	Emp emp2 = new Emp();
+	emp2.setEmpNo(2);  emp2.setEmpName("Rajat"); 
+	emp2.setEmpSalary(22000); emp2.setDepartment(department);
+	department.getEmpList().add(emp1);
+	department.getEmpList().add(emp2);
+	deptRepo.save(department);
+	empRepo.save(emp1);
+	empRepo.save(emp2);
+}
+
+Update MainApp as :
+service.testOneToManyForInsertData();
+
+**I think , we got errors , to solve that issue , we just add a new attribute in Department class as follows:
+
+@OneToMany(mappedBy = "department" , cascade = CascadeType.ALL)
+private List<Emp> empList = new ArrayList<Emp>();
+
+
+**CascadeType means to persist Department object or remove department object, all related employees will be added / removed automatically using cascading features,
+so in service layer, no need to save emp instances emp1, emp2 , just persist department instance only.
+deptRepo.save(department);
+//empRepo.save(emp1);
+//empRepo.save(emp2);
+
+
+===== Data Loading demo :   Fetch type is Lazy( default ) and Eager
+
+For this , add a new method in service layer for demo:
+
+@Transactional
+public void showLazyLoading() {
+	Department dept = deptRepo.findById(101).orElse(null);
+	if(dept!=null) {
+		System.out.println(dept.getDeptNo()+" "+dept.getDeptName());
+		List<Emp> empList = dept.getEmpList();
+		for(Emp e:empList) {
+			System.out.println(e.getEmpNo()+" "+e.getEmpName()+" "+e.getEmpSalary());
+		}
+		
+	}
+}
+
+
+Update mainapp as :
+service.showLazyLoading();
+
+Run and test report from console, here your query is running 2 times, first from department table , and 2nd query from emp table
+This is default Lazy loading , means when required then query will be working in dependent tables.
+
+** But if we need to make it in one shot, means when fetch from department , data also to be fetched from emp table at same time using Joining mechinism , then fetch type will be EAGER
+so , update Department class as :
+@OneToMany(mappedBy = "department" , cascade = CascadeType.ALL , fetch = FetchType.EAGER)
+private List<Emp> empList = new ArrayList<Emp>();
+
+and test main application
+**Now query is coming as join query and fetch data from both tables at the same time
+
+
+===============================================
+Demo For ManyToMany
+Like: one book is written by multiple authors and one author can write multiple books;
+
+@Entity
+public class Author {
+@Id
+private int authorId;
+private String authorName;
+@ManyToMany( cascade = CascadeType.ALL)
+private List<Book> bookList= new ArrayList<Book>();
+
+
+}
+
+@Entity
+public class Book {
+@Id
+private int isbn;
+private String title;
+@ManyToMany(mappedBy ="bookList" , cascade = CascadeType.ALL)
+private List<Author> authorList= new ArrayList<Book>();
+
+
+}
+
+
+===now run application and check tables 
+There are 4 tables created, one for Author one for Book and other two is created to keep author and books associations
+Now we do not need to make 3rd and 4th tables, among 3rd and 4th , one is need to store for maintain associations.
+In Book class, make some changes:
+@ManyToMany(mappedBy ="bookList" )
+private List<Author> authorList;
+
+==create 2 repositories:
+@Repository
+public interface AuthorRepository extends JpaRepository<Author, Integer>{
+
+}
+
+@Repository
+public interface BookRepository extends JpaRepository<Book, Integer>{
+
+}
+
+
+and now run applciation and test from db level. (missing book_author_list)
+
+----Now make a service layer method for test insertion in manytomany relation
+
+@Transactional
+public void testManyToManyForInsertData() {
+	Author a1 = new Author();	a1.setAuthorId(10);  a1.setAuthorName("Rabi");
+	Author a2 = new Author();	a2.setAuthorId(20);  a2.setAuthorName("Raj");
+	Author a3 = new Author();	a3.setAuthorId(30);  a3.setAuthorName("Abhi");
+	
+	Book b1 = new Book(); b1.setIsbn(100); b1.setTitle("Let Us C");
+	Book b2 = new Book(); b2.setIsbn(200); b2.setTitle("Let Us C");
+	
+	b1.getAuthorList().add(a1); b1.getAuthorList().add(a3);
+	b2.getAuthorList().add(a2); b2.getAuthorList().add(a1);
+	
+	a1.getBookList().add(b1); a1.getBookList().add(b2);
+	a2.getBookList().add(b2);
+	a3.getBookList().add(b1); a3.getBookList().add(b2);
+	
+	//authRepo.save(a1); authRepo.save(a2);authRepo.save(a3);
+	bookRepo.save(b1); 
+	bookRepo.save(b2);
+	
+	
+}
+
+
+=-- update mainapp as :  
+service.testManyToManyForInsertData();
+--check the tables now.....
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
