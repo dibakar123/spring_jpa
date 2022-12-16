@@ -1,0 +1,361 @@
+spring.datasource.url=jdbc:mysql://localhost/dtajpa3?useSSL=false
+spring.datasource.username=root
+spring.datasource.password=dibakar
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+# Hibernate configuration 
+#spring.jpa.hibernate.ddl-auto=validate 
+spring.jpa.hibernate.ddl-auto=create 
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
+
+# Spring Framework and application log 
+logging.level.org.springframework=info 
+logging.level.com.cognizant=debug 
+ 
+# Hibernate logs for displaying executed SQL, input and output 
+logging.level.org.hibernate.SQL=trace 
+logging.level.org.hibernate.type.descriptor.sql=trace 
+ 
+# Log pattern 
+logging.pattern.console=%d{dd-MM-yy} %d{HH:mm:ss.SSS} %-20.20thread %5p %-25.25logger{25} %25M %4L %m%n 
+
+
+======================
+
+
+One to One
+---------------
+@Entity
+@Table(name="instructor")
+public class Instructor  {
+	@Id
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Column(name="id")
+	private int id;
+	
+	@Column(name="first_name",length=50)
+	private String firstName;
+	
+	@Column(name="last_name",length=50)
+	private String lastName;
+
+	@Column(name="email",length=50)
+	private String email;
+
+	@OneToOne
+	private InstructorDetail instructorDetail;
+
+}
+
+@Entity
+@Table(name="instructor_detail")
+public class InstructorDetail {
+	
+	@Id
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Column(name="id")
+	private int id;
+	
+	@Column(name="youtube_channel" ,length=50)
+	private String youtubeChannel;
+	
+	@Column(name="hobby",length=50)
+	private String hobby;
+	
+	
+	@OneToOne
+	private Instructor instructor;
+}
+
+Make 2 repoitory
+
+
+Make service:
+@Service
+public class InstructorServiceImpl  {
+	@Autowired
+	InstructorRepository repo1;
+
+	@Autowired
+	InstructorDetailRepository repo2;
+	
+	@Transactional
+	public boolean save(Instructor instructor , InstructorDetail instructorDetail) {
+		repo1.save(instructor);
+		repo2.save(instructorDetail);
+		return true;
+	}
+
+	
+}
+
+
+
+For testing:
+
+Instructor instructor = new Instructor("Dibakar2", "Sanyal1", "sanyaldibakar@gmail.com");
+		InstructorDetail instructorDetail = new InstructorDetail("http://www.youtube1.com", "Java1");
+		instructorDetail.setInstructor(instructor);
+		instructor.setInstructorDetail(instructorDetail);
+		InstructorServiceImpl service = context.getBean(InstructorServiceImpl.class);
+		service.save(instructor, instructorDetail);
+
+=====================In each table there is a column to keep other table's pk.
+
+====Case 2
+
+Update Instructor as :
+@OneToOne
+@JoinColumn(name="instructorDetail_id")
+	private InstructorDetail instructorDetail;
+
+Update InstructorDetail as :
+@OneToOne(mappedBy="instructorDetail")
+	private Instructor instructor;
+
+Now check the tables , Table Instructor has column as FK : Instructor_Id 
+and Instructor_Detals has no such column.
+
+
+
+==============One to Many and Many to One
+
+@Entity
+@Table(name="Flight")
+public class Flight {
+	@Id
+	@Column(length=20)
+	private String flightid;
+	@Column(length=20)
+	private String source;
+	@Column(length=20)
+	private String destination;
+	@Column(length=20)
+	private String airline;
+@OneToMany
+	private List<Booking> bookinglist=new ArrayList<Booking>(); 
+}
+
+
+@Entity
+@Table(name="Booking")
+public class Booking {
+@Id
+@GeneratedValue(strategy=GenerationType.AUTO)
+private int bookingid;
+@Column(length=20)
+private String name;
+@Column(length=20)
+private String emailid;
+@Temporal(TemporalType.DATE)
+private Date bookingdate;
+private int noOfPassengers;
+@ManyToOne
+private Flight flight;
+}
+
+create repository for both entity
+Create service class for both entity
+
+@Service
+public class FLightBookingServiceImpl  {
+	@Autowired
+	FlightRepository repo1;
+
+	@Autowired
+	BookingRepository repo2;
+	
+	@Transactional
+	public boolean flightSave(Flight flight ) {
+		repo1.save(flight);
+		return true;
+	}
+	
+	@Transactional
+	public boolean bookingSave(Booking booking ) {
+		repo2.save(booking);
+		return true;
+	}
+	
+}
+
+Now for test:
+Flight flight = new Flight();
+		flight.setFlightid("F12");
+		flight.setAirline("GoAir");
+		flight.setSource("Del");
+		flight.setDestination("Mum");
+		
+		Booking booking1 = new Booking();
+		booking1.setBookingdate(new Date());
+		booking1.setEmailid("ddd@yy.com");
+		booking1.setName("Rajat Dey");
+		booking1.setNoOfPassengers(2);
+		booking1.setFlight(flight);
+		
+		Booking booking2 = new Booking();
+		booking2.setBookingdate(new Date());
+		booking2.setEmailid("aadd@yy.com");
+		booking2.setName("Rajat Dey");
+		booking2.setNoOfPassengers(2);
+		booking2.setFlight(flight);
+FLightBookingServiceImpl service = context.getBean(FLightBookingServiceImpl.class);
+		service.flightSave(flight);
+		service.bookingSave(booking1);
+		service.bookingSave(booking2);   
+
+check there are 3 tables created : Flight, Bookings( an extra column flight_flightid) & Flight_BookingList
+****Third table has no data.
+ One to Many or Many to One without join column, creates a new table flight_bookinglist
+
+=== Case 2  Use Cascading---
+In previous steps, we need to save Flight as well as booking 2 objects separtely.
+Now make change in class Flight as :
+@OneToMany(cascade = CascadeType.ALL)
+	private List<Booking> bookinglist=new ArrayList<Booking>();  
+
+For Booking class -- no change
+@ManyToOne
+private Flight flight;
+
+
+Now from testing section , only save Flight object as :
+		Flight flight = new Flight();
+		flight.setFlightid("F12");
+		flight.setAirline("GoAir");
+		flight.setSource("Del");
+		flight.setDestination("Mum");
+		
+		Booking booking1 = new Booking();
+		booking1.setBookingdate(new Date());
+		booking1.setEmailid("ddd@yy.com");
+		booking1.setName("Rajat Dey");
+		booking1.setNoOfPassengers(2);
+		booking1.setFlight(flight);
+		
+		Booking booking2 = new Booking();
+		booking2.setBookingdate(new Date());
+		booking2.setEmailid("aadd@yy.com");
+		booking2.setName("Rajat Dey");
+		booking2.setNoOfPassengers(2);
+		booking2.setFlight(flight);
+		
+		flight.getBookinglist().add(booking1);
+		flight.getBookinglist().add(booking2);	
+		
+		FLightBookingServiceImpl service = context.getBean(FLightBookingServiceImpl.class);
+		service.flightSave(flight);
+
+Now data are stored in 3 tables in parallel.
+
+----Case 3 : Used by JoinColumn
+
+For Flight:
+@OneToMany(cascade = CascadeType.ALL)
+	@JoinColumn(name="flightid")
+	private List<Booking> bookinglist=new ArrayList<Booking>();
+
+For Booking:
+@ManyToOne
+@JoinColumn(name="flightid")
+private Flight flight;
+
+For Testing section (Before run -- remove all tables )
+		Flight flight = new Flight();
+		flight.setFlightid("F12");
+		flight.setAirline("GoAir");
+		flight.setSource("Del");
+		flight.setDestination("Mum");
+		
+		Booking booking1 = new Booking();
+		booking1.setBookingdate(new Date());
+		booking1.setEmailid("ddd@yy.com");
+		booking1.setName("Rajat Dey");
+		booking1.setNoOfPassengers(2);
+		booking1.setFlight(flight);
+		
+		Booking booking2 = new Booking();
+		booking2.setBookingdate(new Date());
+		booking2.setEmailid("aadd@yy.com");
+		booking2.setName("Rajat Dey");
+		booking2.setNoOfPassengers(2);
+		booking2.setFlight(flight);
+		
+		flight.getBookinglist().add(booking1);
+		flight.getBookinglist().add(booking2);	
+		
+		FLightBookingServiceImpl service = context.getBean(FLightBookingServiceImpl.class);
+		service.flightSave(flight);
+
+Now check there are 2 tables : Flight and Booking (with a FK column: Flight_flightid),  no third table there.
+===================
+
+--==================For Many to Many
+
+@Entity
+@Table
+public class Laptops {
+	@Id
+	private int lid;
+	private String model;
+	@ManyToMany
+	private List<Candidates> candidatelist = new ArrayList<Candidates>();
+}
+
+
+@Entity
+@Table
+public class Candidates {
+	@Id
+	private int cid;
+	private String cname;
+	@ManyToMany(cascade=CascadeType.ALL)
+	private List<Laptops> laptops = new ArrayList<Laptops>();
+}
+
+Make 2 repository for these 2 entities.
+
+Now make a service class :
+
+@Service
+public class CandidatesLaptopsService {
+
+	@Autowired
+	CandidatesRepository crepo;
+	
+	@Autowired
+	LaptopsRepository lrepo;
+	
+	public void saveCandidate(Candidates c) {
+		crepo.save(c);
+	}
+}
+
+Now test code :
+
+Candidates c1 = new Candidates();		
+		c1.setCid(101);  
+		c1.setCname("Raja");
+
+Laptops l1 = new Laptops(); 
+		l1.setLid(10); 
+		l1.setModel("Lenovo");
+		Laptops l2 = new Laptops(); 
+		l2.setLid(20); 
+		l2.setModel("HP");
+		
+		c1.getLaptops().add(l1);
+		c1.getLaptops().add(l2);  
+		l1.getCandidatelist().add(c1);  
+		l2.getCandidatelist().add(c1);
+		
+		CandidatesLaptopsService cs = context.getBean(CandidatesLaptopsService.class);
+		cs.saveCandidate(c1);
+
+Now check there r 4 tables :Laptops, Candidates , laptops_candidatelist &  candidates_laptops
+
+
+
+
+
+

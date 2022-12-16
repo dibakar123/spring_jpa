@@ -1,0 +1,258 @@
+
+Hands on 2 
+Write queries on stock table using Query Methods
+======================
+From MySQL===========
+
+use opm_learn;
+
+CREATE TABLE stocks ( 
+st_id INT NOT NULL AUTO_INCREMENT,st_code varchar(10),stock_date date,st_open numeric(10,2),
+st_close numeric(10,2),
+st_volume numeric, 
+PRIMARY KEY (st_id) 
+); 
+
+desc stocks;
+
+insert into stocks (st_code,stock_date,st_open,st_close,st_volume) 
+values ('FB','2019-09-03',184.00,182.39,9779400),('FB','2019-09-04',184.65,187.14,11308000),
+('FB','2019-10-05',188.53,190.90,13876700) , 
+('GOOGL','2019-04-22',1236.67,1253.76,954200),('GOOGL','2019-04-23',1256.64,1270.59,1593400); 
+
+insert into stocks (st_code,stock_date,st_open,st_close,st_volume) 
+values('GOOGL','2019-04-22',1236.67,1253.76,954200),('GOOGL','2019-04-23',1256.64,1270.59,1593400),
+('GOOGL','2019-04-24',1270.59,1260.05,1169800); 
+
+insert into stocks (st_code,stock_date,st_open,st_close,st_volume) 
+values('NFLX','2018-12-24',242.00,233.88,9547600), ('NFLX','2018-12-21',263.83,246.39,21397600),
+('NFLX','2018-12-26',233.92,253.67,14402700) ,('NFLX','2018-12-27',133.92,253.67,24402700) ;
+
+select * from stocks ;
+
+======================
+
+Make entity class as:
+
+package com.pack.springbootDataJpa1.model;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.annotation.Generated;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="stocks")
+public class Stock {
+@Id
+@GeneratedValue(strategy = GenerationType.AUTO)   
+@Column(name="st_id")
+private Integer id;
+@Column(name="st_code")
+private String stCode ;
+@Column(name="stock_date")
+private Date stockDate ;
+@Column(name="st_open")
+private Double stOpen;
+@Column(name="st_close")
+private Double stClose;
+@Column(name="st_volume")
+private Long stVolume;
+
+
+public Integer getId() {
+	return id;
+}
+
+
+public void setId(Integer id) {
+	this.id = id;
+}
+
+
+public String getStCode() {
+	return stCode;
+}
+
+
+public void setStCode(String stCode) {
+	this.stCode = stCode;
+}
+
+
+public Date getStockDate() {
+	return stockDate;
+}
+
+
+public void setStockDate(Date stockDate) {
+	this.stockDate = stockDate;
+}
+
+
+public Double getStOpen() {
+	return stOpen;
+}
+
+
+public void setStOpen(Double stOpen) {
+	this.stOpen = stOpen;
+}
+
+
+public Double getStClose() {
+	return stClose;
+}
+
+
+public void setStClose(Double stClose) {
+	this.stClose = stClose;
+}
+
+
+
+
+public Long getStVolume() {
+	return stVolume;
+}
+
+
+public void setStVolume(Long stVolume) {
+	this.stVolume = stVolume;
+}
+
+
+@Override
+public String toString() {
+SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+return String.format("%5s  %10s %10.2f %10.2f %10d", stCode, sdf.format(stockDate), stOpen, stClose,stVolume);
+}
+
+}
+
+
+=====Make repository interface------------
+
+package com.pack.springbootDataJpa1.repository;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import com.pack.springbootDataJpa1.model.Stock;
+
+@Repository
+public interface StockRepository extends CrudRepository<Stock, String> {
+
+public List<Stock> findByStCodeAndStockDateBetween(String code, Date date1, Date date2);
+
+public List<Stock> findByStCodeAndStCloseGreaterThan( String code, Double stclose);
+
+public List<Stock> findTop3ByOrderByStVolumeDesc();
+	
+}
+
+
+===========Make Service class
+
+package com.pack.springbootDataJpa1.service;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.pack.springbootDataJpa1.model.Stock;
+import com.pack.springbootDataJpa1.repository.CountryRepository;
+import com.pack.springbootDataJpa1.repository.MainRepository;
+import com.pack.springbootDataJpa1.repository.StockRepository;
+
+@Service
+public class StockService  {
+	@Autowired
+	StockRepository repo;
+
+	@Transactional 
+	public List<Stock> getQuery1() {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Date d1=null, d2=null;
+		try {
+			d1=sdf.parse("2019-09-01");
+			d2=sdf.parse("2019-09-30");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		
+		
+		List<Stock> slist = repo.findByStCodeAndStockDateBetween("FB",d1, d2);
+		return slist;
+	}
+
+	@Transactional 
+	public List<Stock> getQuery2() {
+		List<Stock> slist= repo.findByStCodeAndStCloseGreaterThan("GOOGL",1250.0); 
+		return slist;
+	}
+	
+	@Transactional 
+	public List<Stock> getQuery3() {
+		List<Stock>  slist = repo.findTop3ByOrderByStVolumeDesc();
+		return slist;
+	}
+
+
+}
+
+
+===========Update MainApplication as :
+
+@SpringBootApplication
+public class MainApplication {
+
+private static final Logger LOGGER = LoggerFactory.getLogger(MainApplication.class); 
+private static StockService stockService;
+
+@SuppressWarnings("unused")
+private static ApplicationContext ctx=null;
+
+public static void main(String[] args) {
+		ctx = SpringApplication.run(MainApplication.class, args);
+		stockService = ctx.getBean(StockService.class);
+
+//Check Query1
+		LOGGER.info("Start "); 
+		List<Stock> slist = stockService.getQuery1();
+		for(Stock s :slist) 
+			LOGGER.info("Stock:{}", s); 
+                LOGGER.info("End "); 
+		
+
+//Check Query2
+		LOGGER.info("Start "); 
+		List<Stock> slist1 = stockService.getQuery2();
+		for(Stock s :slist1) 
+			LOGGER.info("Stock:{}", s);
+                LOGGER.info("End "); 
+		
+		
+//Check Query3
+		LOGGER.info("Start "); 
+		List<Stock> slist2 = stockService.getQuery3();
+		for(Stock s :slist2) 
+			LOGGER.info("Stock:{}", s);
+		LOGGER.info("End "); 
+		
+
+=======================

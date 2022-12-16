@@ -1,0 +1,184 @@
+Dependencies for Spring Boot Core with Data JPA & MySQL
+
+	<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+
+application.properties under /src/main/resources
+
+spring.datasource.url=jdbc:mysql://localhost/datajpa?useSSL=false
+spring.datasource.username=root
+spring.datasource.password=dibakar
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+# Hibernate configuration 
+spring.jpa.hibernate.ddl-auto=validate 
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
+
+
+Entity model :
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+
+@Entity
+@Table(name="person")
+public class Person {
+/*@Id
+  @GeneratedValue(strategy=GenerationType.AUTO)
+  private Long id;
+*/
+	
+@Column(name="name")
+private String name;
+
+@Id
+private String email;
+
+private String address;
+private String password;
+private String state;
+private String city;
+
+//add setter & getter & default constructor 
+}
+
+
+Repository as:
+
+@Repository
+public interface MainRepository extends CrudRepository<Person, String> {
+	//List<Person> findByCity(String city);
+	//@Query("from Person order by city desc")
+	//List<Person> findAllByCitySorted();
+}
+
+
+Service layer:
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.example.demojpa.model.Person;
+import com.example.demojpa.repository.MainRepository;
+
+@Service
+public class PersonServiceImpl implements PersonService {
+	@Autowired
+	MainRepository repo;
+	
+	@Transactional
+	public boolean personSave(Person person) {
+		repo.save(person);
+		return true;
+	}
+
+	@Transactional
+	public List<Person> findAll() {
+		return (List<Person>) repo.findAll();
+	}
+	
+	@Transactional
+	public boolean personEdit(Person person) {
+		Person p = repo.findById(person.getEmail()).orElse(new Person());
+		if(p.getEmail()!=null) {
+			p.setName(person.getName());
+			repo.save(p);
+			return true;
+		}
+		return false;
+	}
+
+	@Transactional
+	public Person findById(String email) {
+		Person p = repo.findById(email).orElse(new Person());
+		return p;
+	}
+	
+	/*public List<Person> findAllByCitySorted() {
+		return repo.findAllByCitySorted();
+	}
+
+	public List<Person> findByCity(String city) {
+			return repo.findByCity(city);
+	}*/
+
+
+}
+
+
+
+
+====================
+Hibernate project
+
+----------
+     <dependency>
+	<groupId>org.hibernate</groupId>
+	<artifactId>hibernate-core</artifactId>
+	<version>4.3.10.Final</version>
+   </dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.14</version>
+</dependency>
+
+
+
+Hibernate: select emp0_.eid as eid1_0_0_, emp0_.address as address2_0_0_, emp0_.empName as empName3_0_0_, emp0_.gender as gender4_0_0_ from Emp1 emp0_ where emp0_.eid=?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Main Starter application
+
+ApplicationContext context =SpringApplication.run(DemojpaApplication.class, args);
+		PersonService personService = context.getBean(PersonService.class);
+		
+		Person person = new Person("Rajataa", "ra2@ra.com", "bkp", "ra123", "wb", "kol");
+		personService.personSave(person);
+		
+		Person p = personService.findById("ra@ra.com");
+		System.out.println(p.getName());
+				
+		List<Person> plist = personService.findAll();
+		for(Person pp:plist) {
+			System.out.println(pp.getName());
+		}
+		
+		Person person1 = new Person("Ramit", "ra@ra.com", "bkp", "ra123", "wb", "kol");
+		personService.personEdit(person1);
+		p = personService.findById("ra@ra.com");
+		System.out.println(p.getName());
+
+
+
